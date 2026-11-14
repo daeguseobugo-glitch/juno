@@ -176,7 +176,10 @@
           <p id="inspect-subtitle" class="text-[11px] font-bold text-slate-500">차량 위의 동그란 버튼을 터치해 열어보세요!</p>
         </div>
       </div>
-      <div class="flex items-center gap-1.5">
+      <div class="flex items-center gap-1.5 flex-wrap justify-end">
+        <button id="btn-toggle-all-open" type="button" class="bg-amber-500 hover:bg-amber-600 text-white text-xs font-black px-3 py-2 rounded-xl shadow-sm active:scale-95 transition">
+          🚪 전체 열기
+        </button>
         <button id="btn-seat-toggle" type="button" class="bg-sky-600 hover:bg-sky-700 text-white text-xs font-black px-3 py-2 rounded-xl shadow-sm active:scale-95 transition">
           🪑 좌석 앉기
         </button>
@@ -341,16 +344,22 @@
 
     // 안티그래비티 / NAS 배포용 사전 탑재 GLB 목록 (models/ 폴더에 파일 추가 후 여기에 등록!)
     const PRELOADED_GLB_CARS = [
-      { id: 'byd-sealion-7',        name: 'BYD 씨라이언 7',    url: './models/byd_sealion_7_ultra_2026.glb',                    initialStall: 0, color: '#3b82f6', price: 40 },
-      { id: 'hyundai-elantra-n',    name: '현대 아반떼 N',     url: './models/2024_hyundai_elantra_n.glb',                      initialStall: 1, color: '#38bdf8', price: 30 },
-      { id: 'lamborghini-countach', name: '람보르기니 쿤타치', url: './models/2022_lamborghini_countach_lpi_800-4.glb',        initialStall: 2, color: '#f8fafc', price: 50 },
-      { id: 'byd-seal',             name: 'BYD 씰',           url: './models/2024_byd_seal.glb',                               initialStall: 3, color: '#64748b', price: 30 },
-      { id: 'porsche-911-gt3',      name: '포르쉐 911 GT3',    url: './models/porsche_911_gt3.glb',                             initialStall: 4, color: '#dc2626', price: 50 },
-      { id: 'audi-rs4-avant',       name: '아우디 RS4 아반트', url: './models/2013_audi_rs4_avant.glb',                         initialStall: 5, color: '#ef4444', price: 40 },
-      { id: 'hyundai-ioniq-5-n',    name: '현대 아이오닉 5 N', url: './models/2024_hyundai_ioniq_5_n.glb',                      initialStall: 6, color: '#60a5fa', price: 40 },
-      { id: 'vw-id4-x',             name: '폭스바겐 ID.4 X',   url: './models/2021_volkswagen_id.4_x.glb',                      initialStall: 7, color: '#e2e8f0', price: 30 },
-      { id: 'mercedes-g63-amg',     name: '벤츠 G63 AMG',      url: './models/2015_mercedes-benz_g-class_g_63_amg.glb',         initialStall: 8, color: '#1e293b', price: 50 },
-      { id: 'bmw-m4-g82',           name: 'BMW M4 G82',        url: './models/2021_bmw_m4_g82_zacoe_carbon_fiber_body_kit.glb', initialStall: 9, color: '#10b981', price: 50 }
+      { id: 'byd-sealion-7',        name: 'BYD 씨라이언 7',       url: './models/byd_sealion_7_ultra_2026.glb',                    initialStall: 0,  color: '#3b82f6', price: 40 },
+      { id: 'hyundai-elantra-n',    name: '현대 아반떼 N',        url: './models/2024_hyundai_elantra_n.glb',                      initialStall: 1,  color: '#38bdf8', price: 30 },
+      { id: 'lamborghini-countach', name: '람보르기니 쿤타치',    url: './models/2022_lamborghini_countach_lpi_800-4.glb',        initialStall: 2,  color: '#f8fafc', price: 50 },
+      { id: 'byd-seal',             name: 'BYD 씰',              url: './models/2024_byd_seal.glb',                               initialStall: 3,  color: '#64748b', price: 30 },
+      { id: 'porsche-911-gt3',      name: '포르쉐 911 GT3',       url: './models/porsche_911_gt3.glb',                             initialStall: 4,  color: '#dc2626', price: 50 },
+      { id: 'audi-rs4-avant',       name: '아우디 RS4 아반트',    url: './models/2013_audi_rs4_avant.glb',                         initialStall: 5,  color: '#ef4444', price: 40 },
+      { id: 'hyundai-ioniq-5-n',    name: '현대 아이오닉 5 N',    url: './models/2024_hyundai_ioniq_5_n.glb',                      initialStall: 6,  color: '#60a5fa', price: 40 },
+      { id: 'vw-id4-x',             name: '폭스바겐 ID.4 X',      url: './models/2021_volkswagen_id.4_x.glb',                      initialStall: 7,  color: '#e2e8f0', price: 30 },
+      { id: 'mercedes-g63-amg',     name: '벤츠 G63 AMG',         url: './models/2015_mercedes-benz_g-class_g_63_amg.glb',         initialStall: 8,  color: '#1e293b', price: 50 },
+      { id: 'bmw-m4-g82',           name: 'BMW M4 G82',           url: './models/2021_bmw_m4_g82_zacoe_carbon_fiber_body_kit.glb', initialStall: 9,  color: '#10b981', price: 50 },
+      { id: 'karlmann-king',        name: '칼만 킹 SUV',          url: './models/karlmann_king.glb',                               initialStall: 10, color: '#18181b', price: 60 },
+      { id: 'maserati-quattroporte',name: '마세라티 콰트로포르테',url: './models/ac_-_maserati_quattroporte_free.glb',             initialStall: 11, color: '#1e3a8a', price: 50 },
+      { id: 'concept-fc051',        name: '미래 콘셉트카',        url: './models/free_conceptcar_051_public_domain_cc0.glb',       initialStall: 12, color: '#cbd5e1', price: 40 },
+      { id: 'fiat-abarth-500',      name: '피아트 아바스 500',    url: './models/fiat_abarth_500.glb',                             initialStall: 13, color: '#ef4444', price: 30 },
+      { id: 'mercedes-e-w212',      name: '벤츠 E클래스 W212',    url: './models/mersedes-benz_e-class_w212.glb',                  initialStall: 14, color: '#94a3b8', price: 40 },
+      { id: 'aston-martin-db11',    name: '애스턴 마틴 DB11',     url: './models/aston_martin_db11.glb',                           initialStall: 15, color: '#047857', price: 60 }
     ];
     const IDB_NAME = 'junho_tomica_glb_db';
     const IDB_STORE = 'models';
@@ -1199,13 +1208,20 @@
         const frontZs = [], backZs = [];
         root.traverse((c) => {
           if (!c.isMesh) return;
-          const cn = getGlbNodePath(c, root);
+          const mats = Array.isArray(c.material) ? c.material : [c.material];
+          const matTag = mats.map((m) => (m && m.name ? m.name.toLowerCase() : '')).join(' ');
+          const cn = getGlbNodePath(c, root) + ' ' + matTag;
           const isFrontCue = cn.includes('front_glass') || cn.includes('f_gls') || cn.includes('bumper_front') ||
-            cn.includes('hood1a') || cn.includes('engine') ||
+            cn.includes('front_bumper') || cn.includes('front_light') || cn.includes('flights') ||
+            cn.includes('headlight') || cn.includes('farianteriori') || cn.includes('hood1a') ||
+            cn.includes('amdb11_hood') || cn.includes('motorhood') || cn.includes('radiator') ||
+            cn.includes('strutbrace') || cn.includes('engine') ||
             (!cn.includes('combined') && (cn.includes('front l') || cn.includes('front r') || cn.includes('_lf_') || cn.includes('_rf_')));
           const isBackCue = cn.includes('back_glass') || cn.includes('b_gls') || cn.includes('tail_light') ||
-            cn.includes('red_glass') || cn.includes('bumper_back') || cn.includes('trunk') || cn.includes('wing1b') ||
-            cn.includes('licenseplate') ||
+            cn.includes('taillight') || cn.includes('red_glass') || cn.includes('bumper_back') ||
+            cn.includes('rearbump') || cn.includes('rear_light') || cn.includes('rlights') ||
+            cn.includes('luciposteriori') || cn.includes('backlight') || cn.includes('trunk') ||
+            cn.includes('wing1b') || cn.includes('licenseplate') ||
             (!cn.includes('combined') && (cn.includes('rear l') || cn.includes('rear r') || cn.includes('_lr_') || cn.includes('_rr_')));
           if (isFrontCue) {
             const b = new THREE.Box3().setFromObject(c);
@@ -1271,10 +1287,12 @@
         function tuneGlbMaterial(mat, fullTag) {
           if (!mat) return { isCabinGlass: false, isTransparent: false };
           const mats = Array.isArray(mat) ? mat : [mat];
-          const hasGlassWord = fullTag.includes('glass') || fullTag.includes('gls') || fullTag.includes('window');
-          const isLightOrMirrorGlass = fullTag.includes('red_glass') || fullTag.includes('tail_light') || fullTag.includes('tilllight') ||
-            fullTag.includes('tl_outer') || fullTag.includes('headlight') || fullTag.includes('light_glass') ||
-            fullTag.includes('glass_light') || fullTag.includes('glass_mat') || fullTag.includes('reflector') ||
+          const hasGlassWord = fullTag.includes('glass') || fullTag.includes('gls') || fullTag.includes('window') ||
+            fullTag.includes('windscreen') || fullTag.includes('vetro_laterale');
+          const isLightOrMirrorGlass = fullTag.includes('red_glass') || fullTag.includes('tail_light') || fullTag.includes('taillight') ||
+            fullTag.includes('tilllight') || fullTag.includes('tl_outer') || fullTag.includes('headlight') ||
+            fullTag.includes('light_glass') || fullTag.includes('glass_light') || fullTag.includes('glass_mat') ||
+            fullTag.includes('rearglass') || fullTag.includes('fanali') || fullTag.includes('reflector') ||
             fullTag.includes('glass_mirror') || fullTag.includes('mirror') || fullTag.includes('indicator') ||
             fullTag.includes('glass_surr');
           const isCabinGlass = hasGlassWord && !isLightOrMirrorGlass;
@@ -1284,7 +1302,8 @@
               m.opacity = Math.min(m.opacity || 0.28, 0.24);
               m.depthWrite = false;
             }
-            if (fullTag.includes('interior') || fullTag.includes('seat') || fullTag.includes('engine')) {
+            if (fullTag.includes('interior') || fullTag.includes('seat') || fullTag.includes('engine') ||
+                fullTag.includes('cockpit') || fullTag.includes('int_') || fullTag.includes('radiator')) {
               m.side = THREE.DoubleSide;
             }
           });
@@ -1309,14 +1328,19 @@
           if (!mesh.geometry || !mesh.geometry.attributes.position) return;
           const n = getGlbNodePath(mesh, root);
           const fullTag = n + ' ' + getMatNameTag(mesh.material);
-          if (fullTag.includes('engine')) hasEngine = true;
-          if (fullTag.includes('interior') || fullTag.includes('seat')) hasInterior = true;
+          if (n.includes('rim_blur') || n.includes('rimblur') || n.includes('damage_glass') || fullTag.includes('damage_glass')) return;
+          if (fullTag.includes('engine') || fullTag.includes('radiator') || fullTag.includes('intake')) hasEngine = true;
+          if (fullTag.includes('interior') || fullTag.includes('seat') || fullTag.includes('cockpit') || fullTag.includes('int_')) hasInterior = true;
 
-          if (n.includes('lf_door') || n.includes('door_l_')) partLists.leftDoor.push(mesh);
-          else if (n.includes('rf_door') || n.includes('door_r_')) partLists.rightDoor.push(mesh);
-          else if (n.includes('lr_door') || n.includes('door_bl')) partLists.leftRearDoor.push(mesh);
+          const isLeftDoor = /(?:^|[\s:_])(lf_door|door_l|doorl|int_door_l|doorglass_l|doorpanel_l|door_arm_l|amdb11_mirror_l|geo_body_doorl|geo_doorl)(?:$|[\s:_0-9])/.test(n) || n.includes('door_l_');
+          const isRightDoor = /(?:^|[\s:_])(rf_door|door_r|doorr|int_door_r|doorglass_r|doorpanel_r|door_arm_r|amdb11_mirror_r|geo_body_doorr|geo_doorr)(?:$|[\s:_0-9])/.test(n) || n.includes('door_r_');
+          const isHood = n.includes('hood1a') || n.includes('car_body_hood') || n.includes('amdb11_hood') || n.includes('motorhood') || n.includes('geo_body_hood');
+
+          if (n.includes('lr_door') || n.includes('door_bl')) partLists.leftRearDoor.push(mesh);
           else if (n.includes('rr_door') || n.includes('door_br')) partLists.rightRearDoor.push(mesh);
-          else if (n.includes('hood1a') || n.includes('car_body_hood')) partLists.hood.push(mesh);
+          else if (isLeftDoor) partLists.leftDoor.push(mesh);
+          else if (isRightDoor) partLists.rightDoor.push(mesh);
+          else if (isHood) partLists.hood.push(mesh);
           else if (n.includes('trunk')) partLists.trunk.push(mesh);
           else partLists.fixed.push(mesh);
         });
@@ -1395,11 +1419,16 @@
           const { isCabinGlass, isTransparent } = tuneGlbMaterial(mesh.material, fullTag);
 
           const isInnerOrChassis = fullTag.includes('interior') || fullTag.includes('seat') || fullTag.includes('engine') ||
-            fullTag.includes('wheel') || fullTag.includes('tire') || fullTag.includes('tyre') ||
-            fullTag.includes('alloy') || fullTag.includes('rim') || fullTag.includes('disk') ||
-            fullTag.includes('brake') || fullTag.includes('caliper') || fullTag.includes('calipoer') ||
-            fullTag.includes('calliper') || fullTag.includes('under') || fullTag.includes('badge') ||
-            fullTag.includes('plate') || fullTag.includes('seatbelt') || fullTag.includes('glow');
+            fullTag.includes('cockpit') || fullTag.includes('int_') || fullTag.includes('steer') ||
+            fullTag.includes('radiator') || fullTag.includes('intake') || fullTag.includes('strutbrace') ||
+            fullTag.includes('engbay') || fullTag.includes('wheel') || fullTag.includes('tire') ||
+            fullTag.includes('tyre') || fullTag.includes('alloy') || fullTag.includes('rim') ||
+            fullTag.includes('disk') || fullTag.includes('disco') || fullTag.includes('brake') ||
+            fullTag.includes('caliper') || fullTag.includes('calipoer') || fullTag.includes('calliper') ||
+            fullTag.includes('pinza') || fullTag.includes('cerchione') || fullTag.includes('gomma') ||
+            fullTag.includes('sottoscocca') || fullTag.includes('susp_') || fullTag.includes('under') ||
+            fullTag.includes('badge') || fullTag.includes('plate') || fullTag.includes('seatbelt') ||
+            fullTag.includes('glow');
 
           const added = attachWholeMesh(mesh, bodyFixedGroup, isTransparent);
           if (isCabinGlass) {
@@ -1595,6 +1624,15 @@
       if (count === 0) setGuide('🅿️', '주차장이 이미 비어 있어요!');
     }
 
+    function syncInspectButtonsUi() {
+      activeHotspots.forEach((hs) => {
+        hs.el.classList.toggle('is-open', !!inspectState[hs.key]);
+      });
+      const anyOpen = !!(inspectState.leftDoor || inspectState.rightDoor || inspectState.hood || inspectState.trunk || inspectState.sunshade || inspectState.glassOpen || inspectState.xray);
+      const toggleBtn = document.getElementById('btn-toggle-all-open');
+      if (toggleBtn) toggleBtn.textContent = anyOpen ? '🔒 모두 닫기' : '🚪 전체 열기';
+    }
+
     function applyInspectParts(carObj) {
       const ud = carObj.mesh.userData;
       const art = ud.articulated;
@@ -1606,11 +1644,17 @@
         ud.parts.targetTrunkAngle = (!art || art.trunk) && inspectState.trunk ? -1.05 : 0;
       }
       if (ud.isGlb) {
-        const hideGlass = !!(inspectState.glassOpen || inspectState.xray || inspectState.seat);
+        const mergedOpenRequested = !!(
+          (!art?.leftDoor && inspectState.leftDoor) ||
+          (!art?.rightDoor && inspectState.rightDoor) ||
+          (!art?.hood && inspectState.hood) ||
+          (!art?.trunk && inspectState.trunk)
+        );
+        const cutaway = !!(inspectState.xray || mergedOpenRequested);
+        const hideGlass = !!(inspectState.glassOpen || inspectState.sunshade || inspectState.seat || cutaway);
         if (ud.glassMeshes) {
           ud.glassMeshes.forEach((gm) => { gm.visible = !hideGlass; });
         }
-        const cutaway = !!inspectState.xray;
         if (ud.shellMeshes) {
           ud.shellMeshes.forEach((sm) => {
             const mats = Array.isArray(sm.material) ? sm.material : [sm.material];
@@ -1632,6 +1676,7 @@
           });
         }
       }
+      syncInspectButtonsUi();
     }
 
     function buildHotspotsForCar(carObj) {
@@ -1657,16 +1702,13 @@
         ];
       } else {
         const art = ud.articulated || {};
-        defs = [];
-        if (art.leftDoor)  defs.push({ key: 'leftDoor',  icon: '🚪', label: '왼쪽 문',   pos: new THREE.Vector3(-bw / 2 - 0.06, dy, 0.06) });
-        if (art.rightDoor) defs.push({ key: 'rightDoor', icon: '🚪', label: '오른쪽 문', pos: new THREE.Vector3( bw / 2 + 0.06, dy, 0.06) });
-        if (art.hood)      defs.push({ key: 'hood',      icon: '⚡', label: '본넷 열기', pos: new THREE.Vector3(0, by + 0.05, -bl * 0.36) });
-        if (art.trunk)     defs.push({ key: 'trunk',     icon: '🧳', label: '트렁크',    pos: new THREE.Vector3(0, by + 0.05,  bl * 0.38) });
-
-        defs.push({ key: 'glassOpen', icon: '🪟', label: '유리 열기', pos: new THREE.Vector3(0, ry + 0.07, 0.04) });
-        const xrayZ = art.hood ? 0.12 : (ud.hasEngine ? -bl * 0.30 : -bl * 0.14);
-        const xrayX = art.hood ? -bw * 0.16 : 0;
-        defs.push({ key: 'xray', icon: '🔍', label: ud.hasEngine ? '실내·엔진 투시' : '실내 투시', pos: new THREE.Vector3(xrayX, by + 0.05, xrayZ) });
+        defs = [
+          { key: 'leftDoor',  icon: '🚪', label: art.leftDoor  ? '왼쪽 문'   : '왼쪽 문·투시',   pos: new THREE.Vector3(-bw / 2 - 0.06, dy, 0.06) },
+          { key: 'rightDoor', icon: '🚪', label: art.rightDoor ? '오른쪽 문' : '오른쪽 문·투시', pos: new THREE.Vector3( bw / 2 + 0.06, dy, 0.06) },
+          { key: 'glassOpen', icon: '🪟', label: '유리 열기',                                    pos: new THREE.Vector3(0, ry + 0.07, 0.05) },
+          { key: 'hood',      icon: '⚡', label: art.hood      ? '본넷 열기' : (ud.hasEngine ? '엔진·투시' : '본넷·투시'), pos: new THREE.Vector3(0, by + 0.05, -bl * 0.36) },
+          { key: 'trunk',     icon: '🧳', label: art.trunk     ? '트렁크'    : '트렁크·투시',    pos: new THREE.Vector3(0, by + 0.05,  bl * 0.38) }
+        ];
       }
 
       defs.forEach((d) => {
@@ -1678,13 +1720,13 @@
           e.stopPropagation();
           playDoorWhoosh();
           inspectState[d.key] = !inspectState[d.key];
-          btn.classList.toggle('is-open', inspectState[d.key]);
           applyInspectParts(carObj);
         });
         layer.appendChild(btn);
         activeHotspots.push({ key: d.key, localPos: d.pos, el: btn });
       });
 
+      syncInspectButtonsUi();
       layer.classList.remove('hidden');
     }
 
@@ -1744,9 +1786,11 @@
       document.getElementById('inspect-subtitle').textContent = !ud.isGlb
         ? '차량 위의 동그란 버튼을 터치하면 문·트렁크·선쉐이드가 열려요!'
         : (hasAnyPivot
-          ? '열리는 문·트렁크·유리 열기와 실내 투시 버튼을 눌러보세요!'
-          : '유리 열기와 실내 투시 버튼으로 멋진 내부와 엔진을 살펴보세요!');
+          ? '분리된 문·본넷·트렁크는 실제로 열리고, 나머지는 깔끔한 투시 모드로 열려요!'
+          : '문·본넷·트렁크 버튼을 누르면 깨짐 없이 깔끔한 유리·실내 투시 모드로 열려요!');
       document.getElementById('btn-seat-toggle').textContent = '🪑 좌석 앉기';
+      const toggleAllBtn = document.getElementById('btn-toggle-all-open');
+      if (toggleAllBtn) toggleAllBtn.textContent = '🚪 전체 열기';
 
       document.getElementById('top-hud').classList.add('opacity-0', 'pointer-events-none');
       document.getElementById('dock-section').classList.add('hidden');
@@ -1965,6 +2009,22 @@
       });
       document.getElementById('btn-inspect-exit').addEventListener('click', () => {
         if (inspectedCarId) exitCarFromStall(inspectedCarId);
+      });
+      document.getElementById('btn-toggle-all-open').addEventListener('click', () => {
+        if (!inspectedCarId) return;
+        const carObj = carObjects.get(inspectedCarId);
+        if (!carObj) return;
+        playDoorWhoosh();
+        const anyOpen = !!(inspectState.leftDoor || inspectState.rightDoor || inspectState.hood || inspectState.trunk || inspectState.sunshade || inspectState.glassOpen || inspectState.xray);
+        const target = !anyOpen;
+        inspectState.leftDoor = target;
+        inspectState.rightDoor = target;
+        inspectState.hood = target;
+        inspectState.trunk = target;
+        inspectState.sunshade = target;
+        inspectState.glassOpen = target;
+        inspectState.xray = false;
+        applyInspectParts(carObj);
       });
       document.getElementById('btn-seat-toggle').addEventListener('click', (e) => {
         if (!inspectedCarId) return;
