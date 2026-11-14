@@ -300,17 +300,23 @@
     }
 
     const STALL_DEFS = [
-      { id: 0, row: 'top',    x: -6.0, z: -1.75, rotY: Math.PI },
-      { id: 1, row: 'top',    x: -3.8, z: -1.75, rotY: Math.PI },
-      { id: 2, row: 'top',    x: -1.6, z: -1.75, rotY: Math.PI },
-      { id: 3, row: 'top',    x:  0.6, z: -1.75, rotY: Math.PI },
-      { id: 4, row: 'top',    x:  5.0, z: -1.75, rotY: Math.PI },
-      { id: 5, row: 'bottom', x: -6.0, z:  3.35, rotY: 0 },
-      { id: 6, row: 'bottom', x: -3.8, z:  3.35, rotY: 0 },
-      { id: 7, row: 'bottom', x: -1.6, z:  3.35, rotY: 0 },
-      { id: 8, row: 'bottom', x:  0.6, z:  3.35, rotY: 0 },
-      { id: 9, row: 'bottom', x:  2.8, z:  3.35, rotY: 0 },
-      { id: 10, row: 'bottom', x: 5.0, z:  3.35, rotY: 0 }
+      { id: 0,  row: 'top',    x: -10.4, z: -2.35, rotY: Math.PI },
+      { id: 1,  row: 'top',    x:  -7.8, z: -2.35, rotY: Math.PI },
+      { id: 2,  row: 'top',    x:  -5.2, z: -2.35, rotY: Math.PI },
+      { id: 3,  row: 'top',    x:  -2.6, z: -2.35, rotY: Math.PI },
+      { id: 4,  row: 'top',    x:   0.0, z: -2.35, rotY: Math.PI },
+      { id: 5,  row: 'top',    x:   2.6, z: -2.35, rotY: Math.PI },
+      { id: 6,  row: 'top',    x:   7.8, z: -2.35, rotY: Math.PI },
+      { id: 7,  row: 'top',    x:  10.4, z: -2.35, rotY: Math.PI },
+      { id: 8,  row: 'bottom', x: -10.4, z:  4.45, rotY: 0 },
+      { id: 9,  row: 'bottom', x:  -7.8, z:  4.45, rotY: 0 },
+      { id: 10, row: 'bottom', x:  -5.2, z:  4.45, rotY: 0 },
+      { id: 11, row: 'bottom', x:  -2.6, z:  4.45, rotY: 0 },
+      { id: 12, row: 'bottom', x:   0.0, z:  4.45, rotY: 0 },
+      { id: 13, row: 'bottom', x:   2.6, z:  4.45, rotY: 0 },
+      { id: 14, row: 'bottom', x:   5.2, z:  4.45, rotY: 0 },
+      { id: 15, row: 'bottom', x:   7.8, z:  4.45, rotY: 0 },
+      { id: 16, row: 'bottom', x:  10.4, z:  4.45, rotY: 0 }
     ];
 
     // =========================================================================
@@ -522,10 +528,10 @@
       const container = document.getElementById('canvas-container');
       scene = new THREE.Scene();
       scene.background = new THREE.Color('#ded6c6');
-      scene.fog = new THREE.Fog('#ded6c6', 28, 56);
+      scene.fog = new THREE.Fog('#ded6c6', 44, 92);
 
-      camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.04, 100);
-      camera.position.set(-7.5, 11.2, 13.5);
+      camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.04, 150);
+      camera.position.set(-11.5, 15.5, 19.5);
 
       renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
       renderer.setSize(window.innerWidth, window.innerHeight);
@@ -545,34 +551,36 @@
       controls.maxPolarAngle = Math.PI / 2 - 0.04;
       controls.minPolarAngle = 0.08;
       controls.minDistance = 0.25;
-      controls.maxDistance = 26;
-      controls.target.set(-0.4, 0.3, -0.3);
+      controls.maxDistance = 38;
+      controls.target.set(0.0, 0.3, -0.4);
       controls.update();
 
       scene.add(new THREE.HemisphereLight(0xfffaf0, 0x9c8f7a, 0.8));
 
       const mainDir = new THREE.DirectionalLight(0xfff8ec, 1.25);
-      mainDir.position.set(8, 16, 10);
+      mainDir.position.set(10, 20, 12);
       mainDir.castShadow = true;
       mainDir.shadow.mapSize.width = 2048; mainDir.shadow.mapSize.height = 2048;
-      mainDir.shadow.camera.near = 2; mainDir.shadow.camera.far = 40;
-      const d = 12;
+      mainDir.shadow.camera.near = 2; mainDir.shadow.camera.far = 55;
+      const d = 18;
       mainDir.shadow.camera.left = -d; mainDir.shadow.camera.right = d;
       mainDir.shadow.camera.top = d; mainDir.shadow.camera.bottom = -d;
       mainDir.shadow.bias = -0.0005;
       scene.add(mainDir);
 
       const fillDir = new THREE.DirectionalLight(0xdbeafe, 0.5);
-      fillDir.position.set(-10, 8, -6);
+      fillDir.position.set(-14, 10, -8);
       scene.add(fillDir);
 
-      const storeGlow1 = new THREE.PointLight(0xffedd5, 0.95, 10);
-      storeGlow1.position.set(-2.5, 1.6, -3.5);
-      const storeGlow2 = new THREE.PointLight(0xffedd5, 0.95, 10);
-      storeGlow2.position.set(2.5, 1.6, -3.5);
+      const storeGlow1 = new THREE.PointLight(0xffedd5, 0.95, 13);
+      storeGlow1.position.set(-5.0, 1.8, -4.6);
+      const storeGlow2 = new THREE.PointLight(0xffedd5, 0.95, 13);
+      storeGlow2.position.set(0.0, 1.8, -4.6);
+      const storeGlow3 = new THREE.PointLight(0xffedd5, 0.95, 13);
+      storeGlow3.position.set(5.0, 1.8, -4.6);
 
       dioramaGroup = new THREE.Group();
-      dioramaGroup.add(storeGlow1, storeGlow2);
+      dioramaGroup.add(storeGlow1, storeGlow2, storeGlow3);
       scene.add(dioramaGroup);
 
       studioGroup = new THREE.Group();
@@ -600,46 +608,60 @@
 
     function buildDiorama() {
       const table = new THREE.Mesh(
-        new THREE.PlaneGeometry(80, 80),
+        new THREE.PlaneGeometry(140, 140),
         new THREE.MeshStandardMaterial({ color: '#dfd7c7', roughness: 0.92 })
       );
-      table.rotation.x = -Math.PI / 2; table.position.y = -0.06; table.receiveShadow = true;
+      table.rotation.x = -Math.PI / 2; table.position.y = -0.08; table.receiveShadow = true;
       dioramaGroup.add(table);
 
       const board = new THREE.Mesh(
-        new THREE.BoxGeometry(15.2, 0.12, 12.2),
+        new THREE.BoxGeometry(28.6, 0.14, 18.0),
         new THREE.MeshStandardMaterial({ color: '#d6d3d1', roughness: 0.8 })
       );
-      board.position.set(-0.4, -0.06, -1.0); board.receiveShadow = true; board.castShadow = true;
+      board.position.set(0.0, -0.07, -0.8); board.receiveShadow = true; board.castShadow = true;
       dioramaGroup.add(board);
 
       const asphalt = new THREE.Mesh(
-        new THREE.PlaneGeometry(15.0, 9.2),
+        new THREE.PlaneGeometry(27.4, 12.6),
         new THREE.MeshStandardMaterial({ map: createAsphaltTexture(), roughness: 0.86, metalness: 0.04 })
       );
-      asphalt.rotation.x = -Math.PI / 2; asphalt.position.set(-0.4, 0.005, 0.5); asphalt.receiveShadow = true;
+      asphalt.rotation.x = -Math.PI / 2; asphalt.position.set(0.0, 0.005, 1.0); asphalt.receiveShadow = true;
       dioramaGroup.add(asphalt);
 
       const lineMat = new THREE.MeshStandardMaterial({ color: '#f1f5f9', roughness: 0.7 });
-      [-7.1, -4.9, -2.7, -0.5, 1.7, 3.9, 6.1].forEach((lx) => {
-        const lineTop = new THREE.Mesh(new THREE.PlaneGeometry(0.11, 2.55), lineMat);
-        lineTop.rotation.x = -Math.PI / 2; lineTop.position.set(lx, 0.012, -1.75); lineTop.receiveShadow = true;
+      [-11.7, -9.1, -6.5, -3.9, -1.3, 1.3, 3.9, 6.5, 9.1, 11.7].forEach((lx) => {
+        const lineTop = new THREE.Mesh(new THREE.PlaneGeometry(0.12, 2.85), lineMat);
+        lineTop.rotation.x = -Math.PI / 2; lineTop.position.set(lx, 0.012, -2.35); lineTop.receiveShadow = true;
         dioramaGroup.add(lineTop);
 
-        const lineBot = new THREE.Mesh(new THREE.PlaneGeometry(0.11, 2.55), lineMat);
-        lineBot.rotation.x = -Math.PI / 2; lineBot.position.set(lx, 0.012, 3.35); lineBot.receiveShadow = true;
+        const lineBot = new THREE.Mesh(new THREE.PlaneGeometry(0.12, 2.85), lineMat);
+        lineBot.rotation.x = -Math.PI / 2; lineBot.position.set(lx, 0.012, 4.45); lineBot.receiveShadow = true;
         dioramaGroup.add(lineBot);
       });
 
+      // Road center dashed lines along driving lane
+      for (let dx = -12.0; dx <= 12.0; dx += 2.2) {
+        const dash = new THREE.Mesh(new THREE.PlaneGeometry(1.1, 0.1), new THREE.MeshStandardMaterial({ color: '#facc15', roughness: 0.7 }));
+        dash.rotation.x = -Math.PI / 2; dash.position.set(dx, 0.011, 1.05); dash.receiveShadow = true;
+        dioramaGroup.add(dash);
+      }
+
+      // Crosswalk in front of store entrance (x = 5.2)
       for (let i = 0; i < 6; i++) {
-        const stripe = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 0.22), lineMat);
-        stripe.rotation.x = -Math.PI / 2; stripe.position.set(2.8, 0.013, -2.75 + i * 0.4); stripe.receiveShadow = true;
+        const stripe = new THREE.Mesh(new THREE.PlaneGeometry(1.75, 0.24), lineMat);
+        stripe.rotation.x = -Math.PI / 2; stripe.position.set(5.2, 0.013, -3.45 + i * 0.44); stripe.receiveShadow = true;
         dioramaGroup.add(stripe);
       }
 
+      const stopperMat = new THREE.MeshStandardMaterial({ color: '#e2e8f0', roughness: 0.65 });
       STALL_DEFS.forEach((stall) => {
+        const stopper = new THREE.Mesh(new THREE.BoxGeometry(1.35, 0.06, 0.14), stopperMat);
+        const stopperZ = stall.row === 'top' ? stall.z - 1.12 : stall.z + 1.12;
+        stopper.position.set(stall.x, 0.03, stopperZ); stopper.receiveShadow = true; stopper.castShadow = true;
+        dioramaGroup.add(stopper);
+
         const hitMesh = new THREE.Mesh(
-          new THREE.PlaneGeometry(2.05, 2.5),
+          new THREE.PlaneGeometry(2.45, 2.75),
           new THREE.MeshBasicMaterial({ visible: false })
         );
         hitMesh.rotation.x = -Math.PI / 2; hitMesh.position.set(stall.x, 0.03, stall.z);
@@ -648,7 +670,7 @@
         stallMeshes.push(hitMesh);
 
         const indMesh = new THREE.Mesh(
-          new THREE.PlaneGeometry(1.88, 2.35),
+          new THREE.PlaneGeometry(2.25, 2.60),
           new THREE.MeshBasicMaterial({ color: '#38bdf8', transparent: true, opacity: 0, side: THREE.DoubleSide })
         );
         indMesh.rotation.x = -Math.PI / 2; indMesh.position.set(stall.x, 0.018, stall.z);
@@ -656,98 +678,127 @@
         stallIndicators.push(indMesh);
       });
 
+      // Streetlamps along south curb
+      const poleMat = new THREE.MeshStandardMaterial({ color: '#334155', metalness: 0.6, roughness: 0.35 });
+      const lampGlowMat = new THREE.MeshStandardMaterial({ color: '#fef9c3', emissive: '#fde047', emissiveIntensity: 0.8 });
+      [-10.4, 0.0, 10.4].forEach((lx) => {
+        const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.08, 3.2, 10), poleMat);
+        pole.position.set(lx, 1.6, 6.95); pole.castShadow = true;
+        const arm = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.08, 0.65), poleMat);
+        arm.position.set(lx, 3.15, 6.65);
+        const bulb = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.08, 0.22), lampGlowMat);
+        bulb.position.set(lx, 3.09, 6.38);
+        dioramaGroup.add(pole, arm, bulb);
+      });
+
       const storeGroup = new THREE.Group();
-      storeGroup.position.set(-0.4, 0, -5.25);
+      storeGroup.position.set(0.0, 0, -6.5);
 
       const sidewalk = new THREE.Mesh(
-        new THREE.BoxGeometry(15.0, 0.14, 1.4),
+        new THREE.BoxGeometry(27.4, 0.14, 1.8),
         new THREE.MeshStandardMaterial({ color: '#27272a', roughness: 0.78 })
       );
-      sidewalk.position.set(0, 0.07, 1.5); sidewalk.receiveShadow = true; sidewalk.castShadow = true;
+      sidewalk.position.set(0, 0.07, 1.7); sidewalk.receiveShadow = true; sidewalk.castShadow = true;
       storeGroup.add(sidewalk);
 
       const interiorBack = new THREE.Mesh(
-        new THREE.BoxGeometry(13.6, 2.55, 2.5),
+        new THREE.BoxGeometry(19.6, 2.75, 2.7),
         new THREE.MeshStandardMaterial({ color: '#fef3c7', emissive: '#fde68a', emissiveIntensity: 0.28, roughness: 0.8 })
       );
-      interiorBack.position.set(-0.2, 1.32, -0.15);
+      interiorBack.position.set(0.0, 1.42, -0.25);
       storeGroup.add(interiorBack);
 
       const shelfMat = new THREE.MeshStandardMaterial({ color: '#475569', roughness: 0.6 });
       const itemColors = ['#ef4444', '#3b82f6', '#22c55e', '#f59e0b', '#ec4899'];
-      for (let sx = -3.8; sx <= 5.2; sx += 2.2) {
-        const shelf = new THREE.Mesh(new THREE.BoxGeometry(1.6, 1.6, 0.45), shelfMat);
-        shelf.position.set(sx, 0.85, 0.4);
+      for (let sx = -7.2; sx <= 7.2; sx += 2.4) {
+        const shelf = new THREE.Mesh(new THREE.BoxGeometry(1.7, 1.65, 0.45), shelfMat);
+        shelf.position.set(sx, 0.88, 0.35);
         storeGroup.add(shelf);
         for (let row = 0; row < 3; row++) {
           const item = new THREE.Mesh(
-            new THREE.BoxGeometry(1.4, 0.22, 0.5),
+            new THREE.BoxGeometry(1.5, 0.22, 0.5),
             new THREE.MeshStandardMaterial({ color: itemColors[(row + Math.abs(Math.round(sx))) % itemColors.length] })
           );
-          item.position.set(sx, 0.45 + row * 0.45, 0.45);
+          item.position.set(sx, 0.48 + row * 0.45, 0.4);
           storeGroup.add(item);
         }
       }
 
       const wallMat = new THREE.MeshStandardMaterial({ color: '#f1f5f9', roughness: 0.65 });
-      const leftWall = new THREE.Mesh(new THREE.BoxGeometry(0.2, 2.75, 2.8), wallMat);
-      leftWall.position.set(-7.0, 1.38, -0.15); leftWall.castShadow = true;
-      const rightWall = leftWall.clone(); rightWall.position.x = 6.6;
-      const backWall = new THREE.Mesh(new THREE.BoxGeometry(13.8, 2.75, 0.2), wallMat);
-      backWall.position.set(-0.2, 1.38, -1.45); backWall.castShadow = true;
+      const leftWall = new THREE.Mesh(new THREE.BoxGeometry(0.22, 2.95, 3.0), wallMat);
+      leftWall.position.set(-9.9, 1.48, -0.25); leftWall.castShadow = true;
+      const rightWall = leftWall.clone(); rightWall.position.x = 9.9;
+      const backWall = new THREE.Mesh(new THREE.BoxGeometry(20.0, 2.95, 0.22), wallMat);
+      backWall.position.set(0.0, 1.48, -1.65); backWall.castShadow = true;
       storeGroup.add(leftWall, rightWall, backWall);
 
       const glassPane = new THREE.Mesh(
-        new THREE.PlaneGeometry(13.4, 2.25),
+        new THREE.PlaneGeometry(19.6, 2.35),
         new THREE.MeshPhysicalMaterial({ color: '#e0f2fe', transparent: true, opacity: 0.28, roughness: 0.05, clearcoat: 1.0 })
       );
-      glassPane.position.set(-0.2, 1.2, 1.24);
+      glassPane.position.set(0.0, 1.28, 1.24);
       storeGroup.add(glassPane);
 
       const frameMat = new THREE.MeshStandardMaterial({ color: '#e2e8f0', roughness: 0.4, metalness: 0.3 });
-      for (let mx = -6.8; mx <= 6.4; mx += 1.65) {
-        const mullion = new THREE.Mesh(new THREE.BoxGeometry(0.12, 2.35, 0.14), frameMat);
-        mullion.position.set(mx, 1.22, 1.25); mullion.castShadow = true;
+      for (let mx = -9.6; mx <= 9.6; mx += 1.92) {
+        const mullion = new THREE.Mesh(new THREE.BoxGeometry(0.12, 2.45, 0.14), frameMat);
+        mullion.position.set(mx, 1.3, 1.25); mullion.castShadow = true;
         storeGroup.add(mullion);
       }
-      const lowerSill = new THREE.Mesh(new THREE.BoxGeometry(13.6, 0.32, 0.18), wallMat);
-      lowerSill.position.set(-0.2, 0.22, 1.25);
+      const lowerSill = new THREE.Mesh(new THREE.BoxGeometry(19.8, 0.34, 0.18), wallMat);
+      lowerSill.position.set(0.0, 0.22, 1.25);
       storeGroup.add(lowerSill);
 
       const fasciaBox = new THREE.Mesh(
-        new THREE.BoxGeometry(14.1, 0.72, 0.65),
+        new THREE.BoxGeometry(20.3, 0.78, 0.68),
         new THREE.MeshStandardMaterial({ color: '#e2e8f0', roughness: 0.45 })
       );
-      fasciaBox.position.set(-0.2, 2.75, 1.32); fasciaBox.castShadow = true;
+      fasciaBox.position.set(0.0, 2.92, 1.34); fasciaBox.castShadow = true;
       storeGroup.add(fasciaBox);
 
       const signFace = new THREE.Mesh(
-        new THREE.PlaneGeometry(14.05, 0.7),
+        new THREE.PlaneGeometry(20.2, 0.75),
         new THREE.MeshStandardMaterial({ map: createLawsonSignTexture(), roughness: 0.28, emissive: '#ffffff', emissiveIntensity: 0.14 })
       );
-      signFace.position.set(-0.2, 2.75, 1.655);
+      signFace.position.set(0.0, 2.92, 1.69);
       storeGroup.add(signFace);
 
       const roofBase = new THREE.Mesh(
-        new THREE.BoxGeometry(14.3, 0.24, 3.5),
+        new THREE.BoxGeometry(20.5, 0.26, 3.7),
         new THREE.MeshStandardMaterial({ color: '#18181b', roughness: 0.65 })
       );
-      roofBase.position.set(-0.2, 3.2, 0.05); roofBase.castShadow = true; roofBase.receiveShadow = true;
+      roofBase.position.set(0.0, 3.4, -0.05); roofBase.castShadow = true; roofBase.receiveShadow = true;
       storeGroup.add(roofBase);
 
       const ridgeMat = new THREE.MeshStandardMaterial({ color: '#bfc5cd', roughness: 0.45, metalness: 0.4 });
-      for (let rx = -6.85; rx <= 6.45; rx += 0.22) {
-        const ridge = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.06, 2.85), ridgeMat);
-        ridge.position.set(rx, 3.34, 0.05); ridge.receiveShadow = true;
+      for (let rx = -9.8; rx <= 9.8; rx += 0.25) {
+        const ridge = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.06, 3.05), ridgeMat);
+        ridge.position.set(rx, 3.55, -0.05); ridge.receiveShadow = true;
         storeGroup.add(ridge);
       }
 
       const rack = new THREE.Mesh(
-        new THREE.BoxGeometry(0.65, 1.45, 0.5),
+        new THREE.BoxGeometry(0.7, 1.5, 0.55),
         new THREE.MeshStandardMaterial({ color: '#991b1b', roughness: 0.4 })
       );
-      rack.position.set(6.45, 0.85, 1.55); rack.castShadow = true;
+      rack.position.set(9.45, 0.88, 1.6); rack.castShadow = true;
       storeGroup.add(rack);
+
+      // Planters & trees flanking the expanded Lawson plaza
+      const planterMat = new THREE.MeshStandardMaterial({ color: '#94a3b8', roughness: 0.75 });
+      const trunkMat = new THREE.MeshStandardMaterial({ color: '#78350f', roughness: 0.9 });
+      const leafMat = new THREE.MeshStandardMaterial({ color: '#22c55e', roughness: 0.75 });
+      [-11.8, 11.8].forEach((tx) => {
+        const planter = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.35, 1.5), planterMat);
+        planter.position.set(tx, 0.25, 1.45); planter.castShadow = true; planter.receiveShadow = true;
+        const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.17, 1.15, 8), trunkMat);
+        trunk.position.set(tx, 0.95, 1.45); trunk.castShadow = true;
+        const crown1 = new THREE.Mesh(new THREE.DodecahedronGeometry(0.78, 0), leafMat);
+        crown1.position.set(tx, 1.85, 1.45); crown1.castShadow = true;
+        const crown2 = new THREE.Mesh(new THREE.DodecahedronGeometry(0.55, 0), leafMat);
+        crown2.position.set(tx + 0.15, 2.38, 1.42); crown2.castShadow = true;
+        storeGroup.add(planter, trunk, crown1, crown2);
+      });
 
       dioramaGroup.add(storeGroup);
     }
@@ -1295,8 +1346,8 @@
       const mesh = carObj.mesh;
       mesh.visible = true;
 
-      const p0 = new THREE.Vector3(-9.2, 0, 0.8);
-      const p1 = new THREE.Vector3(stall.x, 0, 0.8);
+      const p0 = new THREE.Vector3(-15.2, 0, 1.05);
+      const p1 = new THREE.Vector3(stall.x, 0, 1.05);
       const p2 = new THREE.Vector3(stall.x, 0, stall.z);
       mesh.position.copy(p0);
       mesh.rotation.y = -Math.PI / 2;
@@ -1333,8 +1384,8 @@
       setTimeout(() => playEngineHum(0.65), 140);
 
       const p0 = new THREE.Vector3(stall.x, 0, stall.z);
-      const p1 = new THREE.Vector3(stall.x, 0, 0.8);
-      const p2 = new THREE.Vector3(9.8, 0, 0.8);
+      const p1 = new THREE.Vector3(stall.x, 0, 1.05);
+      const p2 = new THREE.Vector3(15.8, 0, 1.05);
 
       activeAnimations.push({
         type: 'exit', carObj, startTime: performance.now(), duration: 900,
@@ -1502,9 +1553,9 @@
       studioGroup.visible = false;
       carObjects.forEach((obj) => { obj.mesh.visible = (obj.stallIndex !== null); });
       scene.background = new THREE.Color('#ded6c6');
-      scene.fog = new THREE.Fog('#ded6c6', 28, 56);
+      scene.fog = new THREE.Fog('#ded6c6', 44, 92);
       controls.minDistance = 0.25;
-      controls.maxDistance = 26;
+      controls.maxDistance = 38;
       controls.maxPolarAngle = Math.PI / 2 - 0.04;
 
       document.getElementById('top-hud').classList.remove('opacity-0', 'pointer-events-none');
@@ -1514,7 +1565,7 @@
       document.getElementById('inspect-bar').classList.remove('flex');
 
       if (resetCam) {
-        moveCamera(new THREE.Vector3(-7.5, 11.2, 13.5), new THREE.Vector3(-0.4, 0.3, -0.3));
+        moveCamera(new THREE.Vector3(-11.5, 15.5, 19.5), new THREE.Vector3(0.0, 0.3, -0.4));
       }
     }
 
@@ -1657,13 +1708,13 @@
       });
 
       document.getElementById('btn-cam-iso').addEventListener('click', () => {
-        playSelectTap(); moveCamera(new THREE.Vector3(-7.5, 11.2, 13.5), new THREE.Vector3(-0.4, 0.3, -0.3));
+        playSelectTap(); moveCamera(new THREE.Vector3(-11.5, 15.5, 19.5), new THREE.Vector3(0.0, 0.3, -0.4));
       });
       document.getElementById('btn-cam-top').addEventListener('click', () => {
-        playSelectTap(); moveCamera(new THREE.Vector3(-0.4, 17.5, 1.8), new THREE.Vector3(-0.4, 0, -0.5));
+        playSelectTap(); moveCamera(new THREE.Vector3(0.0, 24.5, 2.2), new THREE.Vector3(0.0, 0, -0.5));
       });
       document.getElementById('btn-cam-low').addEventListener('click', () => {
-        playSelectTap(); moveCamera(new THREE.Vector3(-9.2, 4.6, 8.8), new THREE.Vector3(0.2, 0.8, -1.2));
+        playSelectTap(); moveCamera(new THREE.Vector3(-13.5, 6.2, 12.5), new THREE.Vector3(0.5, 1.0, -1.5));
       });
 
       document.getElementById('btn-sound').addEventListener('click', (e) => {
