@@ -1238,148 +1238,176 @@
         const wrapper = new THREE.Group();
         const bodyFixedGroup = new THREE.Group();
         const leftDoorPivot = new THREE.Group();
-        leftDoorPivot.position.set(-scaledSize.x * 0.46, scaledSize.y * 0.45, -scaledSize.z * 0.17);
         const rightDoorPivot = new THREE.Group();
-        rightDoorPivot.position.set(scaledSize.x * 0.46, scaledSize.y * 0.45, -scaledSize.z * 0.17);
+        const leftRearDoorPivot = new THREE.Group();
+        const rightRearDoorPivot = new THREE.Group();
         const hoodPivot = new THREE.Group();
-        hoodPivot.position.set(0, scaledSize.y * 0.54, -scaledSize.z * 0.22);
         const trunkPivot = new THREE.Group();
-        trunkPivot.position.set(0, scaledSize.y * 0.78, scaledSize.z * 0.30);
         const sunshadeMesh = new THREE.Group();
 
-        wrapper.add(bodyFixedGroup, leftDoorPivot, rightDoorPivot, hoodPivot, trunkPivot, sunshadeMesh);
+        wrapper.add(bodyFixedGroup, leftDoorPivot, rightDoorPivot, leftRearDoorPivot, rightRearDoorPivot, hoodPivot, trunkPivot, sunshadeMesh);
 
-        // Spatially split outer shell & glass meshes into real articulated 3D parts (with named-part priority)!
-        const rootMeshes = [];
-        root.traverse((c) => { if (c.isMesh) rootMeshes.push(c); });
-
-        const hasNamedDoors = rootMeshes.some((m) => {
-          const p = getGlbNodePath(m, root);
-          return p.includes('lf_door') || p.includes('door_l_');
-        });
-        const hasNamedTrunk = rootMeshes.some((m) => getGlbNodePath(m, root).includes('trunk'));
-        const hasNamedHood = rootMeshes.some((m) => {
-          const p = getGlbNodePath(m, root);
-          return p.includes('hood1a') || p.includes('car_body_hood');
-        });
-
-        function tuneGlbMaterial(mat, n) {
-          if (!mat) return false;
+        function getMatNameTag(mat) {
+          if (!mat) return '';
           const mats = Array.isArray(mat) ? mat : [mat];
-          let isGlassMat = n.includes('glass') || n.includes('gls') || n.includes('window');
-          const isRedGlass = n.includes('red_glass') || n.includes('tail_light') || n.includes('tilllight');
+          return mats.map((m) => (m && m.name ? m.name.toLowerCase() : '')).join(' ');
+        }
+
+        function cloneMeshMaterials(mesh) {
+          if (!mesh.material) return;
+          if (Array.isArray(mesh.material)) {
+            mesh.material = mesh.material.map((m) => (m ? m.clone() : m));
+          } else {
+            mesh.material = mesh.material.clone();
+          }
+          const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+          mesh.userData.matOriginals = mats.map((m) => (m ? {
+            transparent: m.transparent,
+            opacity: m.opacity !== undefined ? m.opacity : 1,
+            depthWrite: m.depthWrite !== undefined ? m.depthWrite : true
+          } : null));
+        }
+
+        function tuneGlbMaterial(mat, fullTag) {
+          if (!mat) return { isCabinGlass: false, isTransparent: false };
+          const mats = Array.isArray(mat) ? mat : [mat];
+          const hasGlassWord = fullTag.includes('glass') || fullTag.includes('gls') || fullTag.includes('window');
+          const isLightOrMirrorGlass = fullTag.includes('red_glass') || fullTag.includes('tail_light') || fullTag.includes('tilllight') ||
+            fullTag.includes('tl_outer') || fullTag.includes('headlight') || fullTag.includes('light_glass') ||
+            fullTag.includes('glass_light') || fullTag.includes('glass_mat') || fullTag.includes('reflector') ||
+            fullTag.includes('glass_mirror') || fullTag.includes('mirror') || fullTag.includes('indicator') ||
+            fullTag.includes('glass_surr');
+          const isCabinGlass = hasGlassWord && !isLightOrMirrorGlass;
           mats.forEach((m) => {
             if (!m) return;
-            const mn = (m.name || '').toLowerCase();
-            if (mn.includes('glass') || mn.includes('gls') || mn.includes('window')) isGlassMat = true;
-            if (isGlassMat && m.transparent && !isRedGlass) {
-              m.opacity = Math.min(m.opacity || 0.3, 0.28);
+            if (isCabinGlass && m.transparent) {
+              m.opacity = Math.min(m.opacity || 0.28, 0.24);
               m.depthWrite = false;
             }
-            if (n.includes('interior') || n.includes('seat')) {
+            if (fullTag.includes('interior') || fullTag.includes('seat') || fullTag.includes('engine')) {
               m.side = THREE.DoubleSide;
             }
           });
-          return isGlassMat || mats.some((m) => m && m.transparent);
+          return { isCabinGlass, isTransparent: isCabinGlass || mats.some((m) => m && m.transparent) };
         }
 
-        function attachSubMesh(geom, mat, matrixWorld, tg, isTransparent) {
-          const subMesh = new THREE.Mesh(geom, mat);
-          subMesh.applyMatrix4(matrixWorld);
+        // Classify whole sub-meshes cleanly without ever slicing continuous triangles
+        const rootMeshes = [];
+        root.traverse((c) => { if (c.isMesh) rootMeshes.push(c); });
+
+        const partLists = {
+          leftDoor: [], rightDoor: [],
+          leftRearDoor: [], rightRearDoor: [],
+          hood: [], trunk: [],
+          fixed: []
+        };
+        let hasEngine = false;
+        let hasInterior = false;
+
+        rootMeshes.forEach((mesh) => {
+          mesh.updateMatrixWorld(true);
+          if (!mesh.geometry || !mesh.geometry.attributes.position) return;
+          const n = getGlbNodePath(mesh, root);
+          const fullTag = n + ' ' + getMatNameTag(mesh.material);
+          if (fullTag.includes('engine')) hasEngine = true;
+          if (fullTag.includes('interior') || fullTag.includes('seat')) hasInterior = true;
+
+          if (n.includes('lf_door') || n.includes('door_l_')) partLists.leftDoor.push(mesh);
+          else if (n.includes('rf_door') || n.includes('door_r_')) partLists.rightDoor.push(mesh);
+          else if (n.includes('lr_door') || n.includes('door_bl')) partLists.leftRearDoor.push(mesh);
+          else if (n.includes('rr_door') || n.includes('door_br')) partLists.rightRearDoor.push(mesh);
+          else if (n.includes('hood1a') || n.includes('car_body_hood')) partLists.hood.push(mesh);
+          else if (n.includes('trunk')) partLists.trunk.push(mesh);
+          else partLists.fixed.push(mesh);
+        });
+
+        function computeGroupBox(meshes) {
+          const b = new THREE.Box3();
+          meshes.forEach((m) => b.expandByObject(m));
+          return b;
+        }
+
+        if (partLists.leftDoor.length) {
+          const b = computeGroupBox(partLists.leftDoor);
+          const c = new THREE.Vector3(); b.getCenter(c);
+          leftDoorPivot.position.set(b.min.x + 0.015, c.y, b.min.z + 0.03);
+        }
+        if (partLists.rightDoor.length) {
+          const b = computeGroupBox(partLists.rightDoor);
+          const c = new THREE.Vector3(); b.getCenter(c);
+          rightDoorPivot.position.set(b.max.x - 0.015, c.y, b.min.z + 0.03);
+        }
+        if (partLists.leftRearDoor.length) {
+          const b = computeGroupBox(partLists.leftRearDoor);
+          const c = new THREE.Vector3(); b.getCenter(c);
+          leftRearDoorPivot.position.set(b.min.x + 0.015, c.y, b.min.z + 0.03);
+        }
+        if (partLists.rightRearDoor.length) {
+          const b = computeGroupBox(partLists.rightRearDoor);
+          const c = new THREE.Vector3(); b.getCenter(c);
+          rightRearDoorPivot.position.set(b.max.x - 0.015, c.y, b.min.z + 0.03);
+        }
+        if (partLists.hood.length) {
+          const b = computeGroupBox(partLists.hood);
+          const c = new THREE.Vector3(); b.getCenter(c);
+          hoodPivot.position.set(c.x, b.max.y - 0.015, b.max.z - 0.02);
+        }
+        if (partLists.trunk.length) {
+          const b = computeGroupBox(partLists.trunk);
+          const c = new THREE.Vector3(); b.getCenter(c);
+          trunkPivot.position.set(c.x, b.max.y - 0.015, b.min.z + 0.02);
+        }
+
+        function attachWholeMesh(mesh, tg, isTransparent) {
+          const subMesh = new THREE.Mesh(mesh.geometry, mesh.material);
+          subMesh.applyMatrix4(mesh.matrixWorld);
           if (tg !== bodyFixedGroup && tg !== sunshadeMesh) {
             subMesh.position.sub(tg.position);
           }
           subMesh.castShadow = !isTransparent;
           subMesh.receiveShadow = true;
           tg.add(subMesh);
+          return subMesh;
         }
 
-        const vA = new THREE.Vector3(), vB = new THREE.Vector3(), vC = new THREE.Vector3();
-        rootMeshes.forEach((mesh) => {
-          mesh.updateMatrixWorld(true);
-          const n = getGlbNodePath(mesh, root);
-          const isTransparent = tuneGlbMaterial(mesh.material, n);
-          const isStaticPart = n.includes('interior') || n.includes('seat') || n.includes('alloy') || n.includes('wheel') || n.includes('tire') || n.includes('brake') || n.includes('caliper') || n.includes('calliper') || n.includes('rim') || n.includes('door_bl') || n.includes('door_br') || n.includes('lr_door') || n.includes('rr_door');
-
-          if (!mesh.geometry || !mesh.geometry.attributes.position) return;
-
-          if (n.includes('lf_door') || n.includes('door_l_')) {
-            attachSubMesh(mesh.geometry, mesh.material, mesh.matrixWorld, leftDoorPivot, isTransparent);
-            return;
-          }
-          if (n.includes('rf_door') || n.includes('door_r_')) {
-            attachSubMesh(mesh.geometry, mesh.material, mesh.matrixWorld, rightDoorPivot, isTransparent);
-            return;
-          }
-          if (n.includes('hood1a') || n.includes('car_body_hood')) {
-            attachSubMesh(mesh.geometry, mesh.material, mesh.matrixWorld, hoodPivot, isTransparent);
-            return;
-          }
-          if (n.includes('trunk')) {
-            attachSubMesh(mesh.geometry, mesh.material, mesh.matrixWorld, trunkPivot, isTransparent);
-            return;
-          }
-
-          if (isStaticPart) {
-            attachSubMesh(mesh.geometry, mesh.material, mesh.matrixWorld, bodyFixedGroup, isTransparent);
-            return;
-          }
-
-          const geom = mesh.geometry;
-          const posAttr = geom.attributes.position;
-          const idxAttr = geom.index;
-          const triCount = idxAttr ? Math.floor(idxAttr.count / 3) : Math.floor(posAttr.count / 3);
-
-          const buckets = { fixed: [], leftDoor: [], rightDoor: [], hood: [], trunk: [], sunshade: [] };
-          const halfW = scaledSize.x * 0.5;
-          const halfL = scaledSize.z * 0.5;
-
-          for (let i = 0; i < triCount; i++) {
-            const i0 = idxAttr ? idxAttr.getX(i * 3) : i * 3;
-            const i1 = idxAttr ? idxAttr.getX(i * 3 + 1) : i * 3 + 1;
-            const i2 = idxAttr ? idxAttr.getX(i * 3 + 2) : i * 3 + 2;
-            vA.fromBufferAttribute(posAttr, i0).applyMatrix4(mesh.matrixWorld);
-            vB.fromBufferAttribute(posAttr, i1).applyMatrix4(mesh.matrixWorld);
-            vC.fromBufferAttribute(posAttr, i2).applyMatrix4(mesh.matrixWorld);
-
-            const cx = (vA.x + vB.x + vC.x) / 3;
-            const cy = (vA.y + vB.y + vC.y) / 3;
-            const cz = (vA.z + vB.z + vC.z) / 3;
-
-            if (!hasNamedDoors && cx < -halfW * 0.62 && cz > -halfL * 0.34 && cz < halfL * 0.36 && cy > scaledSize.y * 0.20 && cy < scaledSize.y * 0.86) {
-              buckets.leftDoor.push(i0, i1, i2);
-            } else if (!hasNamedDoors && cx > halfW * 0.62 && cz > -halfL * 0.34 && cz < halfL * 0.36 && cy > scaledSize.y * 0.20 && cy < scaledSize.y * 0.86) {
-              buckets.rightDoor.push(i0, i1, i2);
-            } else if (!hasNamedHood && Math.abs(cx) < halfW * 0.68 && cz < -halfL * 0.40 && cz > -halfL * 0.94 && cy > scaledSize.y * 0.26) {
-              buckets.hood.push(i0, i1, i2);
-            } else if (!hasNamedTrunk && Math.abs(cx) < halfW * 0.70 && cz > halfL * 0.54 && cz < halfL * 0.96 && cy > scaledSize.y * 0.36) {
-              buckets.trunk.push(i0, i1, i2);
-            } else if (Math.abs(cx) < halfW * 0.54 && cz > -halfL * 0.20 && cz < halfL * 0.38 && cy > scaledSize.y * 0.84) {
-              buckets.sunshade.push(i0, i1, i2);
-            } else {
-              buckets.fixed.push(i0, i1, i2);
-            }
-          }
-
-          const targetGroups = {
-            fixed: bodyFixedGroup,
-            leftDoor: leftDoorPivot,
-            rightDoor: rightDoorPivot,
-            hood: hoodPivot,
-            trunk: trunkPivot,
-            sunshade: sunshadeMesh
-          };
-
-          Object.keys(buckets).forEach((key) => {
-            const arr = buckets[key];
-            if (arr.length === 0) return;
-            const subGeom = new THREE.BufferGeometry();
-            Object.keys(geom.attributes).forEach((attrKey) => {
-              subGeom.setAttribute(attrKey, geom.attributes[attrKey]);
-            });
-            subGeom.setIndex(arr);
-            attachSubMesh(subGeom, mesh.material, mesh.matrixWorld, targetGroups[key], isTransparent);
+        const pivotTargets = [
+          ['leftDoor', leftDoorPivot],
+          ['rightDoor', rightDoorPivot],
+          ['leftRearDoor', leftRearDoorPivot],
+          ['rightRearDoor', rightRearDoorPivot],
+          ['hood', hoodPivot],
+          ['trunk', trunkPivot]
+        ];
+        pivotTargets.forEach(([key, pivot]) => {
+          partLists[key].forEach((mesh) => {
+            const fullTag = getGlbNodePath(mesh, root) + ' ' + getMatNameTag(mesh.material);
+            const { isTransparent } = tuneGlbMaterial(mesh.material, fullTag);
+            attachWholeMesh(mesh, pivot, isTransparent);
           });
+        });
+
+        const shellMeshes = [];
+        const glassMeshes = [];
+
+        partLists.fixed.forEach((mesh) => {
+          const n = getGlbNodePath(mesh, root);
+          const fullTag = n + ' ' + getMatNameTag(mesh.material);
+          const { isCabinGlass, isTransparent } = tuneGlbMaterial(mesh.material, fullTag);
+
+          const isInnerOrChassis = fullTag.includes('interior') || fullTag.includes('seat') || fullTag.includes('engine') ||
+            fullTag.includes('wheel') || fullTag.includes('tire') || fullTag.includes('tyre') ||
+            fullTag.includes('alloy') || fullTag.includes('rim') || fullTag.includes('disk') ||
+            fullTag.includes('brake') || fullTag.includes('caliper') || fullTag.includes('calipoer') ||
+            fullTag.includes('calliper') || fullTag.includes('under') || fullTag.includes('badge') ||
+            fullTag.includes('plate') || fullTag.includes('seatbelt') || fullTag.includes('glow');
+
+          const added = attachWholeMesh(mesh, bodyFixedGroup, isTransparent);
+          if (isCabinGlass) {
+            glassMeshes.push(added);
+          } else if (!isInnerOrChassis) {
+            cloneMeshMaterials(added);
+            shellMeshes.push(added);
+          }
         });
 
         wrapper.userData = {
@@ -1387,8 +1415,18 @@
           bodyW: scaledSize.x, bodyLen: scaledSize.z,
           beltY: scaledSize.y * 0.56, roofY: scaledSize.y * 0.96, doorY: scaledSize.y * 0.50,
           seatPos: new THREE.Vector3(-scaledSize.x * 0.18, scaledSize.y * 0.64, scaledSize.z * 0.04),
+          articulated: {
+            leftDoor: partLists.leftDoor.length > 0,
+            rightDoor: partLists.rightDoor.length > 0,
+            hood: partLists.hood.length > 0,
+            trunk: partLists.trunk.length > 0,
+            sunshade: false
+          },
+          hasEngine, hasInterior,
+          shellMeshes, glassMeshes,
           parts: {
             leftDoorPivot, rightDoorPivot,
+            leftRearDoorPivot, rightRearDoorPivot,
             sunshadeMesh, sunshadeZ: 0,
             hoodPivot, trunkPivot,
             targetLeftDoor: 0, targetRightDoor: 0,
@@ -1559,23 +1597,38 @@
 
     function applyInspectParts(carObj) {
       const ud = carObj.mesh.userData;
+      const art = ud.articulated;
       if (ud.parts) {
-        ud.parts.targetLeftDoor = inspectState.leftDoor ? -1.18 : 0;
-        ud.parts.targetRightDoor = inspectState.rightDoor ? 1.18 : 0;
-        ud.parts.targetSunshadeZ = inspectState.sunshade ? ud.parts.sunshadeZ + 0.48 : ud.parts.sunshadeZ;
-        ud.parts.targetHoodAngle = inspectState.hood ? 1.05 : 0;
-        ud.parts.targetTrunkAngle = inspectState.trunk ? -1.15 : 0;
-      } else if (ud.isGlb) {
-        const hideGlass = inspectState.sunshade || inspectState.leftDoor || inspectState.rightDoor;
+        ud.parts.targetLeftDoor = (!art || art.leftDoor) && inspectState.leftDoor ? -1.08 : 0;
+        ud.parts.targetRightDoor = (!art || art.rightDoor) && inspectState.rightDoor ? 1.08 : 0;
+        ud.parts.targetSunshadeZ = (!art || art.sunshade) && inspectState.sunshade ? ud.parts.sunshadeZ + 0.48 : ud.parts.sunshadeZ;
+        ud.parts.targetHoodAngle = (!art || art.hood) && inspectState.hood ? 0.85 : 0;
+        ud.parts.targetTrunkAngle = (!art || art.trunk) && inspectState.trunk ? -1.05 : 0;
+      }
+      if (ud.isGlb) {
+        const hideGlass = !!(inspectState.glassOpen || inspectState.xray || inspectState.seat);
         if (ud.glassMeshes) {
           ud.glassMeshes.forEach((gm) => { gm.visible = !hideGlass; });
         }
-        const cutaway = inspectState.leftDoor || inspectState.rightDoor || inspectState.hood || inspectState.trunk;
+        const cutaway = !!inspectState.xray;
         if (ud.shellMeshes) {
           ud.shellMeshes.forEach((sm) => {
-            sm.material.transparent = cutaway ? true : sm.userData.origTransparent;
-            sm.material.opacity = cutaway ? 0.22 : sm.userData.origOpacity;
-            sm.material.needsUpdate = true;
+            const mats = Array.isArray(sm.material) ? sm.material : [sm.material];
+            const origs = sm.userData.matOriginals || [];
+            mats.forEach((m, idx) => {
+              if (!m) return;
+              const orig = origs[idx] || { transparent: false, opacity: 1, depthWrite: true };
+              if (cutaway) {
+                m.transparent = true;
+                m.opacity = 0.15;
+                m.depthWrite = false;
+              } else {
+                m.transparent = orig.transparent;
+                m.opacity = orig.opacity;
+                m.depthWrite = orig.depthWrite;
+              }
+              m.needsUpdate = true;
+            });
           });
         }
       }
@@ -1593,13 +1646,28 @@
       const ry = ud.roofY || 0.78;
       const dy = ud.doorY || 0.39;
 
-      const defs = [
-        { key: 'leftDoor',  icon: '🚪', label: '왼쪽 문',   pos: new THREE.Vector3(-bw / 2 - 0.06, dy, 0.08) },
-        { key: 'rightDoor', icon: '🚪', label: '오른쪽 문', pos: new THREE.Vector3( bw / 2 + 0.06, dy, 0.08) },
-        { key: 'sunshade',  icon: '☀️', label: '선쉐이드',  pos: new THREE.Vector3(0, ry + 0.06, 0.09) },
-        { key: 'hood',      icon: '⚡', label: '프렁크',    pos: new THREE.Vector3(0, by + 0.04, -bl * 0.36) },
-        { key: 'trunk',     icon: '🧳', label: '트렁크',    pos: new THREE.Vector3(0, by + 0.05,  bl * 0.38) }
-      ];
+      let defs;
+      if (!ud.isGlb) {
+        defs = [
+          { key: 'leftDoor',  icon: '🚪', label: '왼쪽 문',   pos: new THREE.Vector3(-bw / 2 - 0.06, dy, 0.08) },
+          { key: 'rightDoor', icon: '🚪', label: '오른쪽 문', pos: new THREE.Vector3( bw / 2 + 0.06, dy, 0.08) },
+          { key: 'sunshade',  icon: '☀️', label: '선쉐이드',  pos: new THREE.Vector3(0, ry + 0.06, 0.09) },
+          { key: 'hood',      icon: '⚡', label: '프렁크',    pos: new THREE.Vector3(0, by + 0.04, -bl * 0.36) },
+          { key: 'trunk',     icon: '🧳', label: '트렁크',    pos: new THREE.Vector3(0, by + 0.05,  bl * 0.38) }
+        ];
+      } else {
+        const art = ud.articulated || {};
+        defs = [];
+        if (art.leftDoor)  defs.push({ key: 'leftDoor',  icon: '🚪', label: '왼쪽 문',   pos: new THREE.Vector3(-bw / 2 - 0.06, dy, 0.06) });
+        if (art.rightDoor) defs.push({ key: 'rightDoor', icon: '🚪', label: '오른쪽 문', pos: new THREE.Vector3( bw / 2 + 0.06, dy, 0.06) });
+        if (art.hood)      defs.push({ key: 'hood',      icon: '⚡', label: '본넷 열기', pos: new THREE.Vector3(0, by + 0.05, -bl * 0.36) });
+        if (art.trunk)     defs.push({ key: 'trunk',     icon: '🧳', label: '트렁크',    pos: new THREE.Vector3(0, by + 0.05,  bl * 0.38) });
+
+        defs.push({ key: 'glassOpen', icon: '🪟', label: '유리 열기', pos: new THREE.Vector3(0, ry + 0.07, 0.04) });
+        const xrayZ = art.hood ? 0.12 : (ud.hasEngine ? -bl * 0.30 : -bl * 0.14);
+        const xrayX = art.hood ? -bw * 0.16 : 0;
+        defs.push({ key: 'xray', icon: '🔍', label: ud.hasEngine ? '실내·엔진 투시' : '실내 투시', pos: new THREE.Vector3(xrayX, by + 0.05, xrayZ) });
+      }
 
       defs.forEach((d) => {
         const btn = document.createElement('button');
@@ -1658,7 +1726,7 @@
       if (!carObj || carObj.stallIndex === null || carObj.animating) return;
 
       inspectedCarId = carId;
-      inspectState = { leftDoor: false, rightDoor: false, sunshade: false, hood: false, trunk: false, seat: false };
+      inspectState = { leftDoor: false, rightDoor: false, sunshade: false, hood: false, trunk: false, xray: false, glassOpen: false, seat: false };
       playSelectTap();
 
       dioramaGroup.visible = false;
@@ -1669,8 +1737,15 @@
       scene.fog = null;
       controls.maxDistance = 6.5;
 
+      const ud = carObj.mesh.userData;
+      const art = ud.articulated || {};
+      const hasAnyPivot = art.leftDoor || art.rightDoor || art.hood || art.trunk;
       document.getElementById('inspect-title').textContent = carObj.spec.name;
-      document.getElementById('inspect-subtitle').textContent = '차량 위의 동그란 버튼을 터치하면 문·트렁크·선쉐이드가 열려요!';
+      document.getElementById('inspect-subtitle').textContent = !ud.isGlb
+        ? '차량 위의 동그란 버튼을 터치하면 문·트렁크·선쉐이드가 열려요!'
+        : (hasAnyPivot
+          ? '열리는 문·트렁크·유리 열기와 실내 투시 버튼을 눌러보세요!'
+          : '유리 열기와 실내 투시 버튼으로 멋진 내부와 엔진을 살펴보세요!');
       document.getElementById('btn-seat-toggle').textContent = '🪑 좌석 앉기';
 
       document.getElementById('top-hud').classList.add('opacity-0', 'pointer-events-none');
@@ -1686,7 +1761,7 @@
     function closeInspectMode(resetCam = true) {
       if (!inspectedCarId) return;
       const carObj = carObjects.get(inspectedCarId);
-      inspectState = { leftDoor: false, rightDoor: false, sunshade: false, hood: false, trunk: false, seat: false };
+      inspectState = { leftDoor: false, rightDoor: false, sunshade: false, hood: false, trunk: false, xray: false, glassOpen: false, seat: false };
       if (carObj) applyInspectParts(carObj);
       inspectedCarId = null;
 
@@ -1896,7 +1971,9 @@
         playSelectTap();
         inspectState.seat = !inspectState.seat;
         e.currentTarget.textContent = inspectState.seat ? '🚶 차에서 내리기' : '🪑 좌석 앉기';
-        focusCameraOnCar(carObjects.get(inspectedCarId), inspectState.seat);
+        const carObj = carObjects.get(inspectedCarId);
+        applyInspectParts(carObj);
+        focusCameraOnCar(carObj, inspectState.seat);
       });
 
       document.getElementById('glb-file-input').addEventListener('change', (e) => {
@@ -2232,6 +2309,8 @@
         if (p) {
           p.leftDoorPivot.rotation.y += (p.targetLeftDoor - p.leftDoorPivot.rotation.y) * 0.16;
           p.rightDoorPivot.rotation.y += (p.targetRightDoor - p.rightDoorPivot.rotation.y) * 0.16;
+          if (p.leftRearDoorPivot) p.leftRearDoorPivot.rotation.y += (p.targetLeftDoor - p.leftRearDoorPivot.rotation.y) * 0.16;
+          if (p.rightRearDoorPivot) p.rightRearDoorPivot.rotation.y += (p.targetRightDoor - p.rightRearDoorPivot.rotation.y) * 0.16;
           p.hoodPivot.rotation.x += (p.targetHoodAngle - p.hoodPivot.rotation.x) * 0.16;
           p.trunkPivot.rotation.x += (p.targetTrunkAngle - p.trunkPivot.rotation.x) * 0.16;
           p.sunshadeMesh.position.z += (p.targetSunshadeZ - p.sunshadeMesh.position.z) * 0.16;
