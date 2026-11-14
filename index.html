@@ -111,7 +111,8 @@
       <div>
         <h1 class="text-sm sm:text-base font-black text-slate-800 leading-tight">준호의 로손 토미카 주차장</h1>
         <p class="text-[11px] sm:text-xs font-bold text-slate-500">
-          주차 <span id="parked-count" class="text-sky-600">0</span> / <span id="total-stalls">11</span>대
+          주차 <span id="parked-count" class="text-sky-600">0</span> / <span id="total-stalls">17</span>대
+          · <span class="text-amber-600 font-black">⭐ <span id="hud-points">0</span>P</span>
         </p>
       </div>
     </div>
@@ -141,9 +142,15 @@
           <span class="text-xs sm:text-sm font-black text-slate-800">대기 차고</span>
           <span id="waiting-count" class="text-[11px] font-bold bg-slate-200/80 text-slate-700 px-2 py-0.5 rounded-full">0대</span>
         </div>
-        <div class="flex items-center gap-1.5">
+        <div class="flex items-center gap-1.5 flex-wrap">
           <button id="btn-auto-park" type="button" class="hidden bg-sky-600 text-white text-xs font-extrabold px-3 py-1 rounded-full shadow-sm active:scale-95 transition">
             빈자리에 바로 주차!
+          </button>
+          <button id="btn-open-quiz" type="button" class="bg-amber-500 hover:bg-amber-600 text-white text-xs font-black px-3 py-1 rounded-full shadow-sm active:scale-95 transition">
+            🧮 더하기 퀴즈 (+10P)
+          </button>
+          <button id="btn-open-shop" type="button" class="bg-violet-600 hover:bg-violet-700 text-white text-xs font-black px-3 py-1 rounded-full shadow-sm active:scale-95 transition relative">
+            🛒 자동차 상점 <span id="shop-badge" class="hidden ml-0.5 bg-rose-500 text-white text-[10px] px-1.5 rounded-full">NEW</span>
           </button>
           <label for="glb-file-input" class="cursor-pointer bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-extrabold px-3 py-1 rounded-full shadow-sm active:scale-95 transition">
             + .glb 불러오기
@@ -230,38 +237,120 @@
     </div>
   </div>
 
+  <!-- Starter Car Selection Modal (First Launch: Pick 1 Car) -->
+  <div id="starter-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-3 sm:p-4">
+    <div class="bg-white rounded-3xl w-full max-w-2xl max-h-[88vh] flex flex-col p-5 shadow-2xl border border-slate-100">
+      <div class="mb-3 text-center">
+        <div class="inline-flex items-center gap-1.5 bg-sky-100 text-sky-700 text-xs font-black px-3 py-1 rounded-full mb-1.5">
+          🎁 준호의 첫 출발 선물
+        </div>
+        <h2 class="text-xl sm:text-2xl font-black text-slate-800">첫 번째 자동차를 1대만 골라주세요!</h2>
+        <p class="text-xs sm:text-sm font-bold text-slate-500 mt-1">
+          나머지 자동차는 <span class="text-amber-600">더하기 문제</span>를 맞춰 포인트를 모으면 하나씩 살 수 있어요!
+        </p>
+      </div>
+      <div id="starter-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 overflow-y-auto pr-1 py-1"></div>
+    </div>
+  </div>
+
+  <!-- Addition Math Quiz Modal -->
+  <div id="quiz-modal" class="fixed inset-0 z-40 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-white rounded-3xl w-full max-w-md p-5 shadow-2xl border border-slate-100">
+      <div class="flex items-center justify-between mb-3">
+        <div class="flex items-center gap-2">
+          <span class="text-xl">🧮</span>
+          <h2 class="text-lg font-black text-slate-800">더하기 포인트 퀴즈</h2>
+        </div>
+        <button id="btn-close-quiz" type="button" class="w-8 h-8 rounded-full bg-slate-100 text-slate-600 font-bold hover:bg-slate-200">✕</button>
+      </div>
+
+      <div class="flex items-center justify-between bg-amber-50 border border-amber-200 rounded-2xl px-4 py-2.5 mb-4">
+        <span class="text-xs font-extrabold text-amber-800">⭐ 보유 포인트: <span id="quiz-points" class="text-base font-black text-amber-600">0</span>P</span>
+        <span class="text-xs font-extrabold text-orange-700">🔥 연속 정답: <span id="quiz-streak" class="font-black">0</span></span>
+      </div>
+
+      <div class="bg-slate-50 border-2 border-slate-200 rounded-2xl py-6 px-4 text-center mb-4">
+        <p class="text-xs font-bold text-slate-500 mb-1">정답을 맞히면 <span class="text-amber-600 font-black">+10P</span>!</p>
+        <div id="quiz-question" class="text-4xl sm:text-5xl font-black text-slate-800 tracking-tight">3 + 4 = ?</div>
+        <p id="quiz-feedback" class="text-sm font-black mt-2 min-h-[20px] text-sky-600"></p>
+      </div>
+
+      <div id="quiz-choices" class="grid grid-cols-2 gap-3 mb-4"></div>
+
+      <div class="flex items-center gap-2">
+        <button id="btn-quiz-to-shop" type="button" class="flex-1 bg-violet-600 hover:bg-violet-700 text-white font-black py-2.5 rounded-2xl text-sm shadow-sm active:scale-95 transition">
+          🛒 상점에서 차 사기
+        </button>
+        <button id="btn-quiz-done" type="button" class="px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-black py-2.5 rounded-2xl text-sm active:scale-95 transition">
+          닫기
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Car Shop Modal -->
+  <div id="shop-modal" class="fixed inset-0 z-40 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-3 sm:p-4">
+    <div class="bg-white rounded-3xl w-full max-w-2xl max-h-[88vh] flex flex-col p-5 shadow-2xl border border-slate-100">
+      <div class="flex items-center justify-between mb-3">
+        <div>
+          <h2 class="text-lg sm:text-xl font-black text-slate-800">🛒 준호의 자동차 상점</h2>
+          <p class="text-xs font-bold text-slate-500">
+            보유 포인트 <span id="shop-points" class="text-amber-600 font-black">0P</span>
+            · 보유 차량 <span id="shop-owned-count" class="text-sky-600 font-black">0</span>대
+          </p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="btn-shop-quiz" type="button" class="bg-amber-500 hover:bg-amber-600 text-white text-xs font-black px-3 py-1.5 rounded-full shadow-sm active:scale-95 transition">
+            🧮 +10P 모으기
+          </button>
+          <button id="btn-close-shop" type="button" class="w-8 h-8 rounded-full bg-slate-100 text-slate-600 font-bold hover:bg-slate-200">✕</button>
+        </div>
+      </div>
+
+      <div id="shop-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 overflow-y-auto pr-1 py-1 flex-1"></div>
+
+      <div class="pt-3 mt-2 border-t border-slate-100 flex items-center justify-between text-xs">
+        <span class="font-bold text-slate-400">차량을 사면 주차장에 바로 들어와요!</span>
+        <button id="btn-reset-progress" type="button" class="font-bold text-rose-500 hover:text-rose-700 underline">
+          🔄 처음부터 다시 고르기
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script>
     // =========================================================================
     // 1. 모듈형 토미카 자동차 목록 & IndexedDB 영구 저장소
     // =========================================================================
     const BASE_CAR_CATALOG = [
-      { id: 'supercar-orange', name: '주황 슈퍼카',   bodyType: 'supercar', color: '#f97316', roofColor: '#18181b', spoiler: true, initialStall: null },
-      { id: 'taxi-white',      name: '하얀 택시',     bodyType: 'sedan',    color: '#f8fafc', roofColor: '#f8fafc', stripeColor: '#1d4ed8', taxiSign: '#facc15', initialStall: null },
-      { id: 'mpv-beige',       name: '베이지 미니밴', bodyType: 'minivan',  color: '#9b9176', roofColor: '#9b9176', initialStall: null },
-      { id: 'classic-red',     name: '빨간 스포츠카', bodyType: 'classic',  color: '#dc2626', roofColor: '#dc2626', initialStall: null },
-      { id: 'pickup-black',    name: '검정 픽업트럭', bodyType: 'pickup',   color: '#18181b', roofColor: '#18181b', initialStall: null },
-      { id: 'truck-white',     name: '편의점 트럭',   bodyType: 'truck',    color: '#f8fafc', roofColor: '#ffffff', stripeColor: '#16a34a', initialStall: null },
-      { id: 'zoo-orange',      name: '동물원 지프',   bodyType: 'suv',      color: '#f59e0b', roofColor: '#f59e0b', zooRoof: true, initialStall: null },
-      { id: 'sedan-gunmetal',  name: '그레이 세단',   bodyType: 'sedan',    color: '#475569', roofColor: '#1e293b', initialStall: null },
-      { id: 'coupe-yellow',    name: '노랑 스포츠카', bodyType: 'supercar', color: '#eab308', roofColor: '#111827', spoiler: false, initialStall: null },
-      { id: 'viptaxi-black',   name: '검정 대형택시', bodyType: 'minivan',  color: '#111827', roofColor: '#111827', taxiSign: '#f8fafc', initialStall: null },
-      { id: 'van-black',       name: '검정 승합차',   bodyType: 'van',      color: '#18181b', roofColor: '#18181b', initialStall: null }
+      { id: 'supercar-orange', name: '주황 슈퍼카',   bodyType: 'supercar', color: '#f97316', roofColor: '#18181b', spoiler: true, initialStall: null, price: 20 },
+      { id: 'taxi-white',      name: '하얀 택시',     bodyType: 'sedan',    color: '#f8fafc', roofColor: '#f8fafc', stripeColor: '#1d4ed8', taxiSign: '#facc15', initialStall: null, price: 20 },
+      { id: 'mpv-beige',       name: '베이지 미니밴', bodyType: 'minivan',  color: '#9b9176', roofColor: '#9b9176', initialStall: null, price: 20 },
+      { id: 'classic-red',     name: '빨간 스포츠카', bodyType: 'classic',  color: '#dc2626', roofColor: '#dc2626', initialStall: null, price: 20 },
+      { id: 'pickup-black',    name: '검정 픽업트럭', bodyType: 'pickup',   color: '#18181b', roofColor: '#18181b', initialStall: null, price: 20 },
+      { id: 'truck-white',     name: '편의점 트럭',   bodyType: 'truck',    color: '#f8fafc', roofColor: '#ffffff', stripeColor: '#16a34a', initialStall: null, price: 20 },
+      { id: 'zoo-orange',      name: '동물원 지프',   bodyType: 'suv',      color: '#f59e0b', roofColor: '#f59e0b', zooRoof: true, initialStall: null, price: 20 },
+      { id: 'sedan-gunmetal',  name: '그레이 세단',   bodyType: 'sedan',    color: '#475569', roofColor: '#1e293b', initialStall: null, price: 20 },
+      { id: 'coupe-yellow',    name: '노랑 스포츠카', bodyType: 'supercar', color: '#eab308', roofColor: '#111827', spoiler: false, initialStall: null, price: 20 },
+      { id: 'viptaxi-black',   name: '검정 대형택시', bodyType: 'minivan',  color: '#111827', roofColor: '#111827', taxiSign: '#f8fafc', initialStall: null, price: 20 },
+      { id: 'van-black',       name: '검정 승합차',   bodyType: 'van',      color: '#18181b', roofColor: '#18181b', initialStall: null, price: 20 }
     ];
 
     const STORAGE_KEY = 'junho_tomica_custom_cars_v1';
+    const PROGRESS_KEY = 'junho_tomica_progress_v1';
 
     // 안티그래비티 / NAS 배포용 사전 탑재 GLB 목록 (models/ 폴더에 파일 추가 후 여기에 등록!)
     const PRELOADED_GLB_CARS = [
-      { id: 'byd-sealion-7',        name: 'BYD 씨라이언 7',    url: './models/byd_sealion_7_ultra_2026.glb',                    initialStall: 0, color: '#3b82f6' },
-      { id: 'hyundai-elantra-n',    name: '현대 아반떼 N',     url: './models/2024_hyundai_elantra_n.glb',                      initialStall: 1, color: '#38bdf8' },
-      { id: 'lamborghini-countach', name: '람보르기니 쿤타치', url: './models/2022_lamborghini_countach_lpi_800-4.glb',        initialStall: 2, color: '#f8fafc' },
-      { id: 'byd-seal',             name: 'BYD 씰',           url: './models/2024_byd_seal.glb',                               initialStall: 3, color: '#64748b' },
-      { id: 'porsche-911-gt3',      name: '포르쉐 911 GT3',    url: './models/porsche_911_gt3.glb',                             initialStall: 4, color: '#dc2626' },
-      { id: 'audi-rs4-avant',       name: '아우디 RS4 아반트', url: './models/2013_audi_rs4_avant.glb',                         initialStall: 5, color: '#ef4444' },
-      { id: 'hyundai-ioniq-5-n',    name: '현대 아이오닉 5 N', url: './models/2024_hyundai_ioniq_5_n.glb',                      initialStall: 6, color: '#60a5fa' },
-      { id: 'vw-id4-x',             name: '폭스바겐 ID.4 X',   url: './models/2021_volkswagen_id.4_x.glb',                      initialStall: 7, color: '#e2e8f0' },
-      { id: 'mercedes-g63-amg',     name: '벤츠 G63 AMG',      url: './models/2015_mercedes-benz_g-class_g_63_amg.glb',         initialStall: 8, color: '#1e293b' },
-      { id: 'bmw-m4-g82',           name: 'BMW M4 G82',        url: './models/2021_bmw_m4_g82_zacoe_carbon_fiber_body_kit.glb', initialStall: 9, color: '#10b981' }
+      { id: 'byd-sealion-7',        name: 'BYD 씨라이언 7',    url: './models/byd_sealion_7_ultra_2026.glb',                    initialStall: 0, color: '#3b82f6', price: 40 },
+      { id: 'hyundai-elantra-n',    name: '현대 아반떼 N',     url: './models/2024_hyundai_elantra_n.glb',                      initialStall: 1, color: '#38bdf8', price: 30 },
+      { id: 'lamborghini-countach', name: '람보르기니 쿤타치', url: './models/2022_lamborghini_countach_lpi_800-4.glb',        initialStall: 2, color: '#f8fafc', price: 50 },
+      { id: 'byd-seal',             name: 'BYD 씰',           url: './models/2024_byd_seal.glb',                               initialStall: 3, color: '#64748b', price: 30 },
+      { id: 'porsche-911-gt3',      name: '포르쉐 911 GT3',    url: './models/porsche_911_gt3.glb',                             initialStall: 4, color: '#dc2626', price: 50 },
+      { id: 'audi-rs4-avant',       name: '아우디 RS4 아반트', url: './models/2013_audi_rs4_avant.glb',                         initialStall: 5, color: '#ef4444', price: 40 },
+      { id: 'hyundai-ioniq-5-n',    name: '현대 아이오닉 5 N', url: './models/2024_hyundai_ioniq_5_n.glb',                      initialStall: 6, color: '#60a5fa', price: 40 },
+      { id: 'vw-id4-x',             name: '폭스바겐 ID.4 X',   url: './models/2021_volkswagen_id.4_x.glb',                      initialStall: 7, color: '#e2e8f0', price: 30 },
+      { id: 'mercedes-g63-amg',     name: '벤츠 G63 AMG',      url: './models/2015_mercedes-benz_g-class_g_63_amg.glb',         initialStall: 8, color: '#1e293b', price: 50 },
+      { id: 'bmw-m4-g82',           name: 'BMW M4 G82',        url: './models/2021_bmw_m4_g82_zacoe_carbon_fiber_body_kit.glb', initialStall: 9, color: '#10b981', price: 50 }
     ];
     const IDB_NAME = 'junho_tomica_glb_db';
     const IDB_STORE = 'models';
@@ -419,16 +508,53 @@
     let activeHotspots = [];
     let customCars = [];
     let allCars = [];
+    let userPoints = 0;
+    let quizStreak = 0;
+    let ownedCarIds = new Set();
+
+    function loadProgress() {
+      try {
+        const raw = localStorage.getItem(PROGRESS_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (typeof parsed.points === 'number') userPoints = Math.max(0, parsed.points);
+          if (typeof parsed.streak === 'number') quizStreak = Math.max(0, parsed.streak);
+          if (Array.isArray(parsed.ownedCarIds)) ownedCarIds = new Set(parsed.ownedCarIds);
+        }
+      } catch (e) {
+        userPoints = 0; quizStreak = 0; ownedCarIds = new Set();
+      }
+    }
+
+    function saveProgress() {
+      try {
+        localStorage.setItem(PROGRESS_KEY, JSON.stringify({
+          points: userPoints,
+          streak: quizStreak,
+          ownedCarIds: Array.from(ownedCarIds)
+        }));
+      } catch (e) {}
+    }
+
+    function getFullShopCatalog() {
+      const glbs = PRELOADED_GLB_CARS.map((c) => ({ ...c, isGlb: true }));
+      const base = BASE_CAR_CATALOG.map((c) => ({ ...c, isGlb: false }));
+      return [...glbs, ...base];
+    }
 
     function loadCustomCars() {
+      loadProgress();
       try {
         const raw = localStorage.getItem(STORAGE_KEY);
         if (raw) {
           const parsed = JSON.parse(raw);
-          if (Array.isArray(parsed)) customCars = parsed;
+          if (Array.isArray(parsed)) {
+            customCars = parsed;
+            customCars.forEach((c) => ownedCarIds.add(c.id));
+          }
         }
       } catch (e) { customCars = []; }
-      allCars = [...BASE_CAR_CATALOG, ...customCars];
+      allCars = [...BASE_CAR_CATALOG, ...customCars].filter((c) => ownedCarIds.has(c.id));
     }
 
     function saveCustomCars() {
@@ -1047,7 +1173,7 @@
       return parts.join(' ');
     }
 
-    function addGlbCarToScene(buffer, id, name, saveToDb, initialStall = null, color = '#3b82f6') {
+    function addGlbCarToScene(buffer, id, name, saveToDb, initialStall = null, color = '#3b82f6', autoPark = false) {
       if (typeof THREE.GLTFLoader !== 'function') return;
       const loader = new THREE.GLTFLoader();
       loader.parse(buffer, '', (gltf) => {
@@ -1291,9 +1417,21 @@
 
         if (saveToDb) {
           saveGlbToDB({ id, name, buffer });
+          ownedCarIds.add(id);
+          saveProgress();
           selectedCarId = id;
           playParkChime();
           setGuide('🎉', `${name} 저장 완료! 빈 주차 칸을 터치하세요!`);
+        } else if (autoPark) {
+          const occ = getOccupiedStalls();
+          const freeStall = STALL_DEFS.find((s) => !occ.has(s.id));
+          if (freeStall) {
+            parkCarInStall(id, freeStall.id);
+          } else {
+            selectedCarId = id;
+            playParkChime();
+            setGuide('🎉', `${name} 차고에 도착! 빈자리를 만들어 주차해보세요!`);
+          }
         }
         refreshUI();
       }, (err) => {
@@ -1302,12 +1440,13 @@
       });
     }
 
-    async function loadPreloadedGlbUrl(cfg) {
+    async function loadPreloadedGlbUrl(cfg, autoPark = false) {
       try {
         const res = await fetch(cfg.url);
         if (!res.ok) return;
         const buf = await res.arrayBuffer();
-        addGlbCarToScene(buf, cfg.id, cfg.name, false, cfg.initialStall, cfg.color || '#3b82f6');
+        const stallIdx = autoPark ? null : cfg.initialStall;
+        addGlbCarToScene(buf, cfg.id, cfg.name, false, stallIdx, cfg.color || '#3b82f6', autoPark);
       } catch (e) {
         console.warn('Preloaded GLB fetch skipped:', cfg.url);
       }
@@ -1315,13 +1454,19 @@
 
     async function restoreSavedGlbs() {
       if (typeof PRELOADED_GLB_CARS !== 'undefined') {
-        PRELOADED_GLB_CARS.forEach((cfg) => loadPreloadedGlbUrl(cfg));
+        PRELOADED_GLB_CARS.forEach((cfg) => {
+          if (ownedCarIds.has(cfg.id)) loadPreloadedGlbUrl(cfg, false);
+        });
       }
       const saved = await loadAllGlbsFromDB();
       if (saved.length > 0) {
         saved.forEach((rec) => {
+          ownedCarIds.add(rec.id);
           if (!carObjects.has(rec.id)) addGlbCarToScene(rec.buffer, rec.id, rec.name, false, null);
         });
+      }
+      if (ownedCarIds.size === 0) {
+        openStarterModal();
       }
     }
 
@@ -1603,6 +1748,14 @@
       const occ = getOccupiedStalls();
       document.getElementById('parked-count').textContent = occ.size;
       document.getElementById('total-stalls').textContent = STALL_DEFS.length;
+      const hudPts = document.getElementById('hud-points');
+      if (hudPts) hudPts.textContent = userPoints;
+
+      const shopBadge = document.getElementById('shop-badge');
+      if (shopBadge) {
+        const canBuyAny = getFullShopCatalog().some((c) => !ownedCarIds.has(c.id) && userPoints >= (c.price || 30));
+        shopBadge.classList.toggle('hidden', !canBuyAny);
+      }
 
       stallIndicators.forEach((ind, idx) => {
         const isFree = !occ.has(idx);
@@ -1624,7 +1777,7 @@
       else autoBtn.classList.add('hidden');
 
       if (waitingList.length === 0) {
-        dock.innerHTML = '<div class="text-xs font-bold text-slate-500 px-3 py-4">모든 자동차가 주차장에 있어요! 주차된 차를 터치하면 크게 살펴보거나 출차할 수 있어요.</div>';
+        dock.innerHTML = '<div class="text-xs font-bold text-slate-500 px-3 py-4">보유한 차가 모두 주차장에 있어요! 🧮 더하기 퀴즈로 포인트를 모아 🛒 상점에서 새 차를 사 보세요!</div>';
         return;
       }
 
@@ -1795,6 +1948,7 @@
         const name = input.value.trim() || '새 토미카';
         const spec = { id: 'custom-' + Date.now(), name, bodyType: newType, color: newColor, roofColor: newColor, initialStall: null };
         customCars.push(spec); allCars.push(spec); saveCustomCars();
+        ownedCarIds.add(spec.id); saveProgress();
 
         const mesh = buildTomicaCar(spec);
         mesh.visible = false; scene.add(mesh);
@@ -1806,11 +1960,257 @@
         refreshUI();
       });
 
+      // Starter / Quiz / Car Shop Modal Bindings
+      document.getElementById('btn-open-quiz').addEventListener('click', () => { playSelectTap(); openQuizModal(); });
+      document.getElementById('btn-close-quiz').addEventListener('click', closeQuizModal);
+      document.getElementById('btn-quiz-done').addEventListener('click', closeQuizModal);
+      document.getElementById('btn-quiz-to-shop').addEventListener('click', () => {
+        closeQuizModal(); playSelectTap(); openShopModal();
+      });
+
+      document.getElementById('btn-open-shop').addEventListener('click', () => { playSelectTap(); openShopModal(); });
+      document.getElementById('btn-close-shop').addEventListener('click', closeShopModal);
+      document.getElementById('btn-shop-quiz').addEventListener('click', () => {
+        closeShopModal(); playSelectTap(); openQuizModal();
+      });
+      document.getElementById('btn-reset-progress').addEventListener('click', () => {
+        if (!confirm('보유한 포인트와 차량 선택을 초기화하고 첫 번째 자동차부터 다시 고를까요?')) return;
+        resetGameProgress();
+      });
+
       window.addEventListener('resize', () => {
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
       });
+    }
+
+    // =========================================================================
+    // 8. 첫 차 선택, 더하기 퀴즈 & 자동차 상점 시스템
+    // =========================================================================
+    function unlockAndSpawnCar(carId, autoPark = true) {
+      ownedCarIds.add(carId);
+      saveProgress();
+
+      const glbCfg = PRELOADED_GLB_CARS.find((c) => c.id === carId);
+      if (glbCfg) {
+        if (!carObjects.has(carId)) {
+          setGuide('⏳', `${glbCfg.name} 주차장으로 오는 중...`);
+          loadPreloadedGlbUrl(glbCfg, autoPark);
+        }
+        refreshUI();
+        return;
+      }
+
+      const baseSpec = BASE_CAR_CATALOG.find((c) => c.id === carId);
+      if (baseSpec && !carObjects.has(carId)) {
+        const spec = { ...baseSpec, initialStall: null };
+        allCars.push(spec);
+        const mesh = buildTomicaCar(spec);
+        mesh.visible = false;
+        scene.add(mesh);
+        carObjects.set(spec.id, { spec, mesh, stallIndex: null, animating: false });
+
+        if (autoPark) {
+          const occ = getOccupiedStalls();
+          const freeStall = STALL_DEFS.find((s) => !occ.has(s.id));
+          if (freeStall) parkCarInStall(spec.id, freeStall.id);
+          else selectedCarId = spec.id;
+        }
+      }
+      refreshUI();
+    }
+
+    function openStarterModal() {
+      const grid = document.getElementById('starter-grid');
+      grid.innerHTML = '';
+      getFullShopCatalog().forEach((car) => {
+        const card = document.createElement('button');
+        card.type = 'button';
+        card.className = 'flex flex-col items-center rounded-2xl border-2 border-slate-200 hover:border-sky-500 hover:bg-sky-50/70 bg-white p-3 transition active:scale-95 text-center';
+        const badge = car.isGlb
+          ? '<span class="text-[10px] font-black bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">✨ 리얼 3D</span>'
+          : '<span class="text-[10px] font-black bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">토미카</span>';
+        card.innerHTML = `
+          <div class="w-16 h-8 rounded-xl shadow-inner border border-black/15 mb-2 flex items-center justify-center" style="background:${car.color}">
+            <div class="w-8 h-4 rounded-md bg-slate-900/75"></div>
+          </div>
+          <div class="text-xs sm:text-sm font-black text-slate-800 mb-1">${car.name}</div>
+          <div class="flex items-center gap-1">${badge}<span class="text-[10px] font-black bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">무료 선택</span></div>
+        `;
+        card.addEventListener('click', () => {
+          playParkChime();
+          document.getElementById('starter-modal').classList.add('hidden');
+          document.getElementById('starter-modal').classList.remove('flex');
+          unlockAndSpawnCar(car.id, true);
+        });
+        grid.appendChild(card);
+      });
+      document.getElementById('starter-modal').classList.remove('hidden');
+      document.getElementById('starter-modal').classList.add('flex');
+    }
+
+    let currentQuizAnswer = 0;
+    let quizLocked = false;
+
+    function openQuizModal() {
+      document.getElementById('quiz-points').textContent = userPoints;
+      document.getElementById('quiz-streak').textContent = quizStreak;
+      nextQuizQuestion();
+      const m = document.getElementById('quiz-modal');
+      m.classList.remove('hidden'); m.classList.add('flex');
+    }
+
+    function closeQuizModal() {
+      const m = document.getElementById('quiz-modal');
+      m.classList.add('hidden'); m.classList.remove('flex');
+    }
+
+    function nextQuizQuestion() {
+      quizLocked = false;
+      const minA = quizStreak >= 7 ? 10 : (quizStreak >= 3 ? 3 : 1);
+      const maxA = quizStreak >= 7 ? 25 : (quizStreak >= 3 ? 14 : 9);
+      const minB = quizStreak >= 7 ? 3 : 1;
+      const maxB = quizStreak >= 7 ? 15 : (quizStreak >= 3 ? 11 : 9);
+      const a = minA + Math.floor(Math.random() * (maxA - minA + 1));
+      const b = minB + Math.floor(Math.random() * (maxB - minB + 1));
+      currentQuizAnswer = a + b;
+
+      document.getElementById('quiz-question').textContent = `${a} + ${b} = ?`;
+      const fb = document.getElementById('quiz-feedback');
+      fb.textContent = '알맞은 숫자를 골라보세요!';
+      fb.className = 'text-sm font-black mt-2 min-h-[20px] text-slate-500';
+
+      const choiceSet = new Set([currentQuizAnswer]);
+      const offsets = [-3, -2, -1, 1, 2, 3, 4, 10];
+      while (choiceSet.size < 4) {
+        const candidate = currentQuizAnswer + offsets[Math.floor(Math.random() * offsets.length)];
+        if (candidate > 0) choiceSet.add(candidate);
+      }
+      const choices = Array.from(choiceSet).sort(() => Math.random() - 0.5);
+
+      const container = document.getElementById('quiz-choices');
+      container.innerHTML = '';
+      choices.forEach((val) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'bg-white hover:bg-sky-50 border-2 border-slate-200 hover:border-sky-500 rounded-2xl py-3.5 text-2xl font-black text-slate-800 shadow-sm active:scale-95 transition';
+        btn.textContent = val;
+        btn.addEventListener('click', () => {
+          if (quizLocked) return;
+          if (val === currentQuizAnswer) {
+            quizLocked = true;
+            userPoints += 10;
+            quizStreak += 1;
+            saveProgress();
+            playParkChime();
+            btn.className = 'bg-emerald-500 border-2 border-emerald-600 rounded-2xl py-3.5 text-2xl font-black text-white shadow-md transition';
+            fb.textContent = '🎉 정답이에요! +10P 획득!';
+            fb.className = 'text-sm font-black mt-2 min-h-[20px] text-emerald-600';
+            document.getElementById('quiz-points').textContent = userPoints;
+            document.getElementById('quiz-streak').textContent = quizStreak;
+            refreshUI();
+            setTimeout(() => {
+              if (!document.getElementById('quiz-modal').classList.contains('hidden')) {
+                nextQuizQuestion();
+              }
+            }, 700);
+          } else {
+            quizStreak = 0;
+            saveProgress();
+            playSelectTap();
+            btn.disabled = true;
+            btn.className = 'bg-rose-50 border-2 border-rose-300 rounded-2xl py-3.5 text-2xl font-black text-rose-400 opacity-75';
+            fb.textContent = '😊 아쉬워요! 다시 한번 더해 볼까요?';
+            fb.className = 'text-sm font-black mt-2 min-h-[20px] text-rose-500';
+            document.getElementById('quiz-streak').textContent = quizStreak;
+          }
+        });
+        container.appendChild(btn);
+      });
+    }
+
+    function openShopModal() {
+      renderShopModal();
+      const m = document.getElementById('shop-modal');
+      m.classList.remove('hidden'); m.classList.add('flex');
+    }
+
+    function closeShopModal() {
+      const m = document.getElementById('shop-modal');
+      m.classList.add('hidden'); m.classList.remove('flex');
+    }
+
+    function renderShopModal() {
+      document.getElementById('shop-points').textContent = `${userPoints}P`;
+      document.getElementById('shop-owned-count').textContent = ownedCarIds.size;
+      const grid = document.getElementById('shop-grid');
+      grid.innerHTML = '';
+
+      getFullShopCatalog().forEach((car) => {
+        const isOwned = ownedCarIds.has(car.id);
+        const price = car.price || 30;
+        const canAfford = userPoints >= price;
+
+        const card = document.createElement('div');
+        card.className = `flex flex-col items-center justify-between rounded-2xl border-2 p-3 text-center ${
+          isOwned ? 'border-emerald-200 bg-emerald-50/40' : 'border-slate-200 bg-white'
+        }`;
+        const badge = car.isGlb
+          ? '<span class="text-[10px] font-black bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">✨ 리얼 3D</span>'
+          : '<span class="text-[10px] font-black bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">토미카</span>';
+
+        card.innerHTML = `
+          <div class="flex flex-col items-center">
+            <div class="w-14 h-7 rounded-xl shadow-inner border border-black/15 mb-2 flex items-center justify-center" style="background:${car.color}">
+              <div class="w-7 h-3.5 rounded-md bg-slate-900/75"></div>
+            </div>
+            <div class="text-xs sm:text-sm font-black text-slate-800 mb-1">${car.name}</div>
+            <div class="mb-2">${badge}</div>
+          </div>
+        `;
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        if (isOwned) {
+          btn.disabled = true;
+          btn.className = 'w-full py-1.5 rounded-xl bg-emerald-100 text-emerald-700 text-xs font-black';
+          btn.textContent = '✅ 보유중';
+        } else if (canAfford) {
+          btn.className = 'w-full py-1.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-xs font-black shadow-sm active:scale-95 transition';
+          btn.textContent = `⭐ ${price}P 구매하기`;
+          btn.addEventListener('click', () => {
+            userPoints -= price;
+            playParkChime();
+            closeShopModal();
+            unlockAndSpawnCar(car.id, true);
+          });
+        } else {
+          btn.disabled = true;
+          btn.className = 'w-full py-1.5 rounded-xl bg-slate-100 text-slate-400 text-xs font-black';
+          btn.textContent = `🔒 ${price}P 필요`;
+        }
+        card.appendChild(btn);
+        grid.appendChild(card);
+      });
+    }
+
+    function resetGameProgress() {
+      if (inspectedCarId) closeInspectMode(false);
+      activeAnimations.length = 0;
+      carObjects.forEach((obj) => {
+        scene.remove(obj.mesh);
+      });
+      carObjects.clear();
+      allCars = [];
+      selectedCarId = null;
+      userPoints = 0;
+      quizStreak = 0;
+      ownedCarIds = new Set();
+      saveProgress();
+      closeShopModal();
+      refreshUI();
+      openStarterModal();
     }
 
     function lerpAngle(a, b, t) {
